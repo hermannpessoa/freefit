@@ -27,32 +27,43 @@ interface GeneratedWorkout {
 
 export default function AIWorkoutPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [loading, setLoading] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState(60);
   const [generatedWorkout, setGeneratedWorkout] = useState<GeneratedWorkout | null>(null);
 
   const handleGenerateWorkout = async () => {
-    if (!user) {
-      toast.error('Usuário não autenticado');
+    // Check if user is authenticated (either has full profile or active session)
+    if (!user && !session) {
+      toast.error('Por favor, faça login para gerar um treino');
+      navigate('/auth');
       return;
     }
 
     setLoading(true);
     try {
       console.log('User data:', user);
+      console.log('Session:', session?.user?.email);
+      
+      // Use user data if available, otherwise use defaults
+      const userId = user?.id || session?.user?.id;
+      if (!userId) {
+        toast.error('Erro: ID do usuário não encontrado');
+        setLoading(false);
+        return;
+      }
       
       const onboardingData = {
-        age: user.age || 25,
-        gender: user.gender || 'male',
-        weight: user.weight || 70,
-        height: user.height || 170,
-        objective: user.objective || 'maintenance',
-        level: user.level || 'beginner',
-        gym_type: user.gym_type || 'home',
-        equipments: user.equipments || ['bodyweight'],
-        available_time: user.available_time || 60,
-        target_weight: user.target_weight,
+        age: user?.age || 25,
+        gender: user?.gender || 'male',
+        weight: user?.weight || 70,
+        height: user?.height || 170,
+        objective: user?.objective || 'maintenance',
+        level: user?.level || 'beginner',
+        gym_type: user?.gym_type || 'home',
+        equipments: user?.equipments || ['bodyweight'],
+        available_time: user?.available_time || 60,
+        target_weight: user?.target_weight,
       };
 
       console.log('Onboarding data:', onboardingData);
@@ -66,14 +77,14 @@ export default function AIWorkoutPage() {
       setGeneratedWorkout(workout);
 
       // Generate image via Supabase Edge Function (server-side to avoid CORS)
-      if (workout.image) {
+      if (workout.image && userId) {
         let imageLoadingToastId: string | null = null;
         try {
           imageLoadingToastId = toast.loading('Gerando imagem do treino...');
           const imageUrl = await aiService.generateWorkoutImage(
             workout.image,
             workout.name,
-            user.id
+            userId
           );
           if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
           if (imageUrl) {

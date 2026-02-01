@@ -96,8 +96,8 @@ REQUISITOS IMPORTANTES:
           headers: {
             Authorization: `Bearer ${OPENROUTER_API_KEY}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://myfit.app',
-            'X-Title': 'MyFit',
+            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://freefit.app',
+            'X-Title': 'FreeFit',
           },
         }
       );
@@ -156,8 +156,8 @@ Retorne APENAS JSON válido, SEM formatação markdown.
           headers: {
             Authorization: `Bearer ${OPENROUTER_API_KEY}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://myfit.app',
-            'X-Title': 'MyFit',
+            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://freefit.app',
+            'X-Title': 'FreeFit',
           },
         }
       );
