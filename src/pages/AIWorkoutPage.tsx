@@ -61,22 +61,9 @@ export default function AIWorkoutPage() {
       console.log('Generated workout:', workout);
       setGeneratedWorkout(workout);
 
-      // Generate image if available
-      if (workout.image) {
-        let imageLoadingToastId: string | null = null;
-        try {
-          imageLoadingToastId = toast.loading('Gerando imagem do treino...');
-          const imageUrl = await aiService.generateWorkoutImage(workout.image);
-          if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
-          if (imageUrl) {
-            setGeneratedWorkout({ ...workout, imageUrl });
-            toast.success('Imagem gerada com sucesso!');
-          }
-        } catch (error) {
-          console.error('Image generation failed:', error);
-          if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
-        }
-      }
+      // NOTE: Image generation via Replicate requires backend proxy to avoid CORS issues
+      // Image generation is disabled on client-side for now
+      // TODO: Implement backend endpoint to handle image generation
 
       toast.success('Treino gerado com sucesso!');
     } catch (error: any) {
