@@ -10,4 +10,15 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Use esbuild for Node 18 compatibility (instead of rolldown which requires Node 20+)
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
+  ssr: {
+    noExternal: [],
+  },
 })
