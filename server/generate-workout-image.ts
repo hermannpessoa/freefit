@@ -150,18 +150,22 @@ async function generateWorkoutImage(req: GenerateImageRequest) {
 }
 
 Deno.serve(async (req) => {
+  // Always include CORS headers in response
+  const responseHeaders = new Headers(corsHeaders);
+  responseHeaders.set('Content-Type', 'application/json');
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
+    return new Response(null, {
       status: 200,
-      headers: corsHeaders,
+      headers: responseHeaders,
     });
   }
 
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: responseHeaders,
     });
   }
 
@@ -171,10 +175,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify(result), {
       status: result.success ? 200 : 400,
-      headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders,
-      },
+      headers: responseHeaders,
     });
   } catch (error) {
     console.error('Edge function error:', error);
@@ -185,10 +186,7 @@ Deno.serve(async (req) => {
       }),
       {
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders,
-        },
+        headers: responseHeaders,
       }
     );
   }
