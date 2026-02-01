@@ -7,6 +7,7 @@ export interface User {
   gender: 'male' | 'female' | 'other';
   weight: number; // kg
   height: number; // cm
+  target_weight?: number; // kg
   imc: number;
   objective: 'weight_loss' | 'muscle_gain' | 'maintenance';
   level: 'beginner' | 'intermediate' | 'advanced';
@@ -152,6 +153,7 @@ export interface OnboardingData {
   gender: 'male' | 'female' | 'other';
   weight: number;
   height: number;
+  target_weight?: number;
   objective: 'weight_loss' | 'muscle_gain' | 'maintenance';
   level: 'beginner' | 'intermediate' | 'advanced';
   gym_type: 'home' | 'gym';

@@ -17,14 +17,23 @@ export const aiService = {
 
     const { onboardingData, workoutDuration } = params;
 
+    const goalDifferenceKg = Math.abs((onboardingData.target_weight || onboardingData.weight) - onboardingData.weight);
+    const goalTypeText = onboardingData.target_weight ? (onboardingData.target_weight > onboardingData.weight ? 'GAIN' : onboardingData.target_weight < onboardingData.weight ? 'LOSE' : 'MAINTAIN') : '';
+    const dailyProgressKg = onboardingData.days_to_goal && onboardingData.days_to_goal > 0 ? (goalDifferenceKg / onboardingData.days_to_goal).toFixed(2) : '0';
+
+    const targetWeightLine = onboardingData.target_weight ? `- Target Weight: ${onboardingData.target_weight} kg (${goalTypeText} ${goalDifferenceKg} kg)` : '';
+    const timelineLine = onboardingData.days_to_goal ? `- Timeline: ${onboardingData.days_to_goal} days to reach goal (approximately ${dailyProgressKg} kg per day with regular workouts)` : '';
+
     const prompt = `
 You are a professional fitness trainer. Generate a personalized workout plan based on the following user profile:
 
 - Gender: ${onboardingData.gender}
 - Age: ${onboardingData.age}
-- Weight: ${onboardingData.weight} kg
+- Current Weight: ${onboardingData.weight} kg
 - Height: ${onboardingData.height} cm
 - Objective: ${onboardingData.objective === 'weight_loss' ? 'Weight Loss' : onboardingData.objective === 'muscle_gain' ? 'Muscle Gain' : 'Maintenance'}
+${targetWeightLine}
+${timelineLine}
 - Experience Level: ${onboardingData.level}
 - Training Location: ${onboardingData.gym_type === 'gym' ? 'Gym' : 'Home'}
 - Available Equipment: ${onboardingData.equipments?.join(', ') || 'Bodyweight only'}

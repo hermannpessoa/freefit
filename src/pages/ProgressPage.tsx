@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import type { ProgressLog } from '@/types';
 import { workoutService } from '@/services/workoutService';
+// @ts-ignore
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
 import { ChevronLeft, TrendingUp } from 'lucide-react';

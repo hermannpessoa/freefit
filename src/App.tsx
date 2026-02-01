@@ -9,7 +9,6 @@ import WorkoutEditor from '@/pages/WorkoutEditor';
 import SettingsPage from '@/pages/SettingsPage';
 import AIWorkoutPage from '@/pages/AIWorkoutPage';
 import ProgressPage from '@/pages/ProgressPage';
-import '@/assets/styles/globals.css';
 
 function AppContent() {
   const { session, loading } = useAuth();

@@ -22,29 +22,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
+    let mounted = true;
+    let loadingTimeout: ReturnType<typeof setTimeout>;
+
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted) {
+          setSession(session);
+          if (session?.user) {
+            await fetchUserProfile(session.user.id);
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
-    });
+    };
+
+    // Timeout de segurança para evitar loading infinito
+    loadingTimeout = setTimeout(() => {
+      if (mounted) {
+        setLoading(false);
+      }
+    }, 5000);
+
+    initAuth();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_, session) => {
-      setSession(session);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      } else {
-        setUser(null);
+      if (mounted) {
+        setSession(session);
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+        clearTimeout(loadingTimeout);
       }
-      setLoading(false);
     });
 
-    return () => subscription?.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(loadingTimeout);
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -55,7 +83,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Se o usuário não existe ainda em public.users, isso é ok (novo usuário)
+        console.log('User profile not found yet, will be created on first access');
+        return;
+      }
       setUser(data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -63,11 +95,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
     if (error) throw error;
+
+    // Criar perfil de usuário na tabela public.users
+    if (data.user) {
+      try {
+        await supabase.from('users').insert([
+          {
+            id: data.user.id,
+            email: data.user.email,
+          },
+        ]);
+      } catch (err) {
+        console.error('Error creating user profile:', err);
+        // Não lançar erro pois a autenticação funcionou
+      }
+    }
   };
 
   const signIn = async (email: string, password: string) => {
@@ -76,6 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       password,
     });
     if (error) throw error;
+    // O onAuthStateChange vai atualizar a session automaticamente
   };
 
   const signOut = async () => {

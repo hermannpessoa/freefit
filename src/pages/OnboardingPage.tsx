@@ -26,6 +26,7 @@ export default function OnboardingPage() {
     gym_type: 'gym',
     equipments: [],
     available_time: 60,
+    target_weight: 75,
   });
 
   const handleNext = () => {
@@ -54,6 +55,7 @@ export default function OnboardingPage() {
           gym_type: data.gym_type,
           equipments: data.equipments,
           available_time: data.available_time,
+          target_weight: data.target_weight,
         });
         toast.success('Perfil criado com sucesso!');
         navigate('/dashboard');
@@ -76,6 +78,52 @@ export default function OnboardingPage() {
 
   const calculateIMC = (weight: number, height: number) => {
     return Math.round((weight / ((height / 100) ** 2)) * 100) / 100;
+  };
+
+  const getIMCStatus = (imc: number) => {
+    if (imc < 18.5) {
+      return {
+        label: 'Abaixo do peso',
+        message: 'Você está abaixo do peso ideal. Considere ganhar peso de forma saudável.',
+        color: 'bg-yellow-500/20 border-yellow-500',
+        textColor: 'text-yellow-400'
+      };
+    } else if (imc >= 18.5 && imc < 25) {
+      return {
+        label: 'Peso ideal',
+        message: 'Parabéns! Você está em um peso ideal para sua altura.',
+        color: 'bg-green-500/20 border-green-500',
+        textColor: 'text-green-400'
+      };
+    } else if (imc >= 25 && imc < 30) {
+      return {
+        label: 'Sobrepeso',
+        message: 'Você está com sobrepeso. Recomendamos exercitar-se com regularidade.',
+        color: 'bg-yellow-500/20 border-yellow-500',
+        textColor: 'text-yellow-400'
+      };
+    } else if (imc >= 30 && imc < 35) {
+      return {
+        label: 'Obesidade Grau I',
+        message: 'Você está com obesidade grau I. Procure orientação de um profissional.',
+        color: 'bg-orange-500/20 border-orange-500',
+        textColor: 'text-orange-400'
+      };
+    } else if (imc >= 35 && imc < 40) {
+      return {
+        label: 'Obesidade Grau II',
+        message: 'Você está com obesidade grau II. É importante buscar ajuda profissional.',
+        color: 'bg-orange-600/20 border-orange-600',
+        textColor: 'text-orange-500'
+      };
+    } else {
+      return {
+        label: 'Obesidade Grau III',
+        message: 'Você está com obesidade grau III. Procure urgentemente um médico ou nutricionista.',
+        color: 'bg-red-500/20 border-red-500',
+        textColor: 'text-red-400'
+      };
+    }
   };
 
   const steps = [
@@ -104,50 +152,215 @@ export default function OnboardingPage() {
           </div>
 
           <div>
-            <label className="block text-[#00fff3] font-semibold mb-2">
-              Idade: {data.age} anos
-            </label>
-            <input
-              type="range"
-              min="16"
-              max="80"
-              value={data.age}
-              onChange={(e) => setData({ ...data, age: parseInt(e.target.value) })}
-              className="w-full"
-            />
+            <label className="block text-[#00fff3] font-semibold mb-2">Idade: {data.age} anos</label>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setData({ ...data, age: Math.max(16, data.age - 1) })}
+                className="px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3] rounded-lg hover:border-[#00fff3] transition font-bold text-lg"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                value={data.age === 0 ? '' : data.age}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setData({ ...data, age: 0 });
+                  } else {
+                    const num = parseInt(val, 10);
+                    if (!isNaN(num)) {
+                      setData({ ...data, age: num });
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (isNaN(val) || e.target.value === '') {
+                    setData({ ...data, age: 16 });
+                  } else if (val < 16) {
+                    setData({ ...data, age: 16 });
+                  } else if (val > 80) {
+                    setData({ ...data, age: 80 });
+                  }
+                }}
+                className="flex-1 px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-white rounded-lg text-center focus:border-[#00fff3] outline-none transition"
+              />
+              <button
+                onClick={() => setData({ ...data, age: Math.min(80, data.age + 1) })}
+                className="px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3] rounded-lg hover:border-[#00fff3] transition font-bold text-lg"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <div>
-            <label className="block text-[#00fff3] font-semibold mb-2">
-              Peso: {data.weight} kg
-            </label>
-            <input
-              type="range"
-              min="30"
-              max="150"
-              value={data.weight}
-              onChange={(e) => setData({ ...data, weight: parseInt(e.target.value) })}
-              className="w-full"
-            />
+            <label className="block text-[#00fff3] font-semibold mb-2">Peso: {data.weight} kg</label>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setData({ ...data, weight: Math.max(30, data.weight - 1) })}
+                className="px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3] rounded-lg hover:border-[#00fff3] transition font-bold text-lg"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                value={data.weight === 0 ? '' : data.weight}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setData({ ...data, weight: 0 });
+                  } else {
+                    const num = parseInt(val, 10);
+                    if (!isNaN(num)) {
+                      setData({ ...data, weight: num });
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (isNaN(val) || e.target.value === '') {
+                    setData({ ...data, weight: 30 });
+                  } else if (val < 30) {
+                    setData({ ...data, weight: 30 });
+                  } else if (val > 150) {
+                    setData({ ...data, weight: 150 });
+                  }
+                }}
+                className="flex-1 px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-white rounded-lg text-center focus:border-[#00fff3] outline-none transition"
+              />
+              <button
+                onClick={() => setData({ ...data, weight: Math.min(150, data.weight + 1) })}
+                className="px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3] rounded-lg hover:border-[#00fff3] transition font-bold text-lg"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <div>
+            <label className="block text-[#00fff3] font-semibold mb-2">Altura: {data.height} cm</label>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setData({ ...data, height: Math.max(140, data.height - 1) })}
+                className="px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3] rounded-lg hover:border-[#00fff3] transition font-bold text-lg"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                value={data.height === 0 ? '' : data.height}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setData({ ...data, height: 0 });
+                  } else {
+                    const num = parseInt(val, 10);
+                    if (!isNaN(num)) {
+                      setData({ ...data, height: num });
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (isNaN(val) || e.target.value === '') {
+                    setData({ ...data, height: 140 });
+                  } else if (val < 140) {
+                    setData({ ...data, height: 140 });
+                  } else if (val > 220) {
+                    setData({ ...data, height: 220 });
+                  }
+                }}
+                className="flex-1 px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-white rounded-lg text-center focus:border-[#00fff3] outline-none transition"
+              />
+              <button
+                onClick={() => setData({ ...data, height: Math.min(220, data.height + 1) })}
+                className="px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3] rounded-lg hover:border-[#00fff3] transition font-bold text-lg"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 bg-[#001317] rounded-lg border border-[#00fff3]/20">
+            <p className="text-[#00fff3] font-semibold mb-3">
+              IMC: {calculateIMC(data.weight, data.height)}
+            </p>
+            {(() => {
+              const status = getIMCStatus(calculateIMC(data.weight, data.height));
+              return (
+                <div className={`p-3 rounded-lg border ${status.color}`}>
+                  <p className={`font-semibold ${status.textColor} mb-1`}>
+                    {status.label}
+                  </p>
+                  <p className={`text-sm ${status.textColor}`}>
+                    {status.message}
+                  </p>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Meta de Peso',
+      description: 'Qual é seu objetivo de peso?',
+      content: (
+        <div className="space-y-4">
+          <div>
             <label className="block text-[#00fff3] font-semibold mb-2">
-              Altura: {data.height} cm
+              Peso Alvo: {data.target_weight} kg
             </label>
-            <input
-              type="range"
-              min="140"
-              max="220"
-              value={data.height}
-              onChange={(e) => setData({ ...data, height: parseInt(e.target.value) })}
-              className="w-full"
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setData({ ...data, target_weight: Math.max(30, data.target_weight! - 1) })}
+                className="px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3] rounded-lg hover:border-[#00fff3] transition font-bold text-lg"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                value={data.target_weight === 0 ? '' : data.target_weight}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setData({ ...data, target_weight: 0 });
+                  } else {
+                    const num = parseInt(val, 10);
+                    if (!isNaN(num)) {
+                      setData({ ...data, target_weight: num });
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (isNaN(val) || e.target.value === '') {
+                    setData({ ...data, target_weight: 30 });
+                  } else if (val < 30) {
+                    setData({ ...data, target_weight: 30 });
+                  } else if (val > 150) {
+                    setData({ ...data, target_weight: 150 });
+                  }
+                }}
+                className="flex-1 px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-white rounded-lg text-center focus:border-[#00fff3] outline-none transition"
+              />
+              <button
+                onClick={() => setData({ ...data, target_weight: Math.min(150, data.target_weight! + 1) })}
+                className="px-4 py-3 bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3] rounded-lg hover:border-[#00fff3] transition font-bold text-lg"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <div className="p-4 bg-[#001317] rounded-lg border border-[#00fff3]/20">
             <p className="text-[#00fff3] font-semibold">
-              IMC: {calculateIMC(data.weight, data.height)}
+              Diferença: {Math.abs(data.target_weight! - data.weight).toFixed(1)} kg
+            </p>
+            <p className={`text-sm mt-1 ${data.target_weight! > data.weight ? 'text-blue-400' : data.target_weight! < data.weight ? 'text-red-400' : 'text-green-400'}`}>
+              {data.target_weight! > data.weight ? '⬆️ Ganhar peso' : data.target_weight! < data.weight ? '⬇️ Perder peso' : '✓ Peso ideal'}
             </p>
           </div>
         </div>
