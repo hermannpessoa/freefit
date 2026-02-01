@@ -1,4 +1,3 @@
-import Replicate from "npm:replicate@3.0.0";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 /**
@@ -13,9 +12,8 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-const replicate = new Replicate({
-  auth: Deno.env.get('REPLICATE_API_KEY'),
-});
+const REPLICATE_API_KEY = Deno.env.get('REPLICATE_API_KEY');
+const REPLICATE_API_URL = 'https://api.replicate.com/v1/predictions';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') || '',
@@ -32,12 +30,21 @@ async function generateWorkoutImage(req: GenerateImageRequest) {
   const { imagePrompt, workoutName, userId } = req;
 
   try {
+    if (!REPLICATE_API_KEY) {
+      throw new Error('REPLICATE_API_KEY not configured');
+    }
+
     console.log('Starting image generation for:', workoutName);
 
-    // Generate image using Replicate SDXL
-    const output = await replicate.run(
-      'stability-ai/sdxl:39ed52f2a60c3b36b96a16fb5c4c5479534ff685bb6c221by1bf2b4cbf490544',
-      {
+    // Create prediction via Replicate API
+    const predictionResponse = await fetch(REPLICATE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${REPLICATE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        version: '39ed52f2a60c3b36b96a16fb5c4c5479534ff685bb6c221by1bf2b4cbf490544',
         input: {
           prompt: imagePrompt,
           num_inference_steps: 30,
@@ -45,14 +52,51 @@ async function generateWorkoutImage(req: GenerateImageRequest) {
           scheduler: 'K_EULER',
           seed: Math.floor(Math.random() * 1000000),
         },
-      }
-    );
+      }),
+    });
 
-    if (!output || !Array.isArray(output) || output.length === 0) {
-      throw new Error('No image generated');
+    if (!predictionResponse.ok) {
+      const error = await predictionResponse.text();
+      throw new Error(`Replicate API error: ${error}`);
     }
 
-    const imageUrl = output[0] as string;
+    const prediction = await predictionResponse.json();
+    const predictionId = prediction.id;
+
+    // Poll for completion (max 10 minutes)
+    let imageUrl: string | null = null;
+    let attempts = 0;
+    const maxAttempts = 120; // 120 * 5 seconds = 10 minutes
+
+    while (attempts < maxAttempts && !imageUrl) {
+      const statusResponse = await fetch(`${REPLICATE_API_URL}/${predictionId}`, {
+        headers: {
+          'Authorization': `Token ${REPLICATE_API_KEY}`,
+        },
+      });
+
+      const status = await statusResponse.json();
+      console.log(`Prediction status: ${status.status}`);
+
+      if (status.status === 'succeeded') {
+        const output = status.output;
+        if (Array.isArray(output) && output.length > 0) {
+          imageUrl = output[0];
+        }
+        break;
+      } else if (status.status === 'failed') {
+        throw new Error(`Image generation failed: ${status.error}`);
+      }
+
+      // Wait 5 seconds before polling again
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      attempts++;
+    }
+
+    if (!imageUrl) {
+      throw new Error('Image generation timed out');
+    }
+
     console.log('Image generated:', imageUrl);
 
     // Upload to Supabase Storage
@@ -65,12 +109,12 @@ async function generateWorkoutImage(req: GenerateImageRequest) {
     const filename = `${userId}/${sanitizedName}-${timestamp}.jpg`;
 
     // Fetch the generated image
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
       throw new Error('Failed to fetch generated image');
     }
 
-    const blob = await response.arrayBuffer();
+    const blob = await imageResponse.arrayBuffer();
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
