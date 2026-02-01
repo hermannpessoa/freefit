@@ -115,20 +115,16 @@ Deno.serve(async (req) => {
     console.log("Prompt:", imagePrompt);
 
     // Try to generate real image
-    let imageUrl = await generateImageWithReplicate(imagePrompt);
-
-    // Fallback to placeholder if generation fails
-    if (!imageUrl) {
-      console.log("Falling back to placeholder image");
-      imageUrl = `https://via.placeholder.com/600x400?text=${encodeURIComponent(workoutName)}`;
-    }
+    const imageUrl = await generateImageWithReplicate(imagePrompt);
 
     return new Response(
       JSON.stringify({
-        success: true,
+        success: imageUrl ? true : false,
         imageUrl: imageUrl,
+        message: imageUrl ? "Image generated successfully" : "Image generation failed",
       }),
       {
+        status: imageUrl ? 200 : 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
@@ -137,6 +133,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
+        imageUrl: null,
         error: error instanceof Error ? error.message : "Unknown error",
       }),
       {
