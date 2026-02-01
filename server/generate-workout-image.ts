@@ -31,7 +31,7 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "black-forest-labs/flux-1.1-pro",
+        model: "black-forest-labs/flux-2-max",
         input: {
           prompt: prompt,
           aspect_ratio: "1:1",
