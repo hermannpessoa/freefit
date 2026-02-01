@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     MYFIT WEBAPP                             │
+│                     FREEFIT WEBAPP                             │
 │                  React 18 + TypeScript                       │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -175,7 +175,7 @@ USER INTERACTION
 ### 🏠 LandingPage
 ```
 Hero Section
-├─ Título: "MyFit - Treinos Inteligentes"
+├─ Título: "FreeFit - Treinos Inteligentes"
 ├─ Subtítulo com descrição
 └─ CTAs: "Começar" / "Login"
 

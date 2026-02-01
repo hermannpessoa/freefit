@@ -151,4 +151,4 @@ Após preencher `.env.local` com credenciais reais:
 
 ---
 
-*Aproveite! Seu MyFit está pronto para desenvolvimento! 💪*
+*Aproveite! Seu FreeFit está pronto para desenvolvimento! 💪*

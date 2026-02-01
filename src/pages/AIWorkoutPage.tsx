@@ -262,8 +262,6 @@ export default function AIWorkoutPage() {
                 ))}
               </div>
             </div>
-              </div>
-            </div>
 
             {/* Tips */}
             {generatedWorkout.tips && generatedWorkout.tips.length > 0 && (

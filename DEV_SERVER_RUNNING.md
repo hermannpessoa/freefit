@@ -1,4 +1,4 @@
-# 🎉 MyFit - Dev Server Running! ✨
+# 🎉 FreeFit - Dev Server Running! ✨
 
 ## ✅ STATUS
 
@@ -28,7 +28,7 @@ Use --host flag ou acesse pelo IP da sua máquina
 ## 📱 O QUE VER
 
 ### 1. Landing Page
-- Hero com "MyFit - Treinos Inteligentes"
+- Hero com "FreeFit - Treinos Inteligentes"
 - 6 Features em grid
 - 3 Planos de preço
 - Botões "Login" e "Começar"
@@ -220,7 +220,7 @@ npm run build
 
 ## 🚀 Sucesso!
 
-Seu MyFit está rodando!
+Seu FreeFit está rodando!
 
 **Próximo passo**: Configure Supabase e OpenRouter seguindo [SETUP.md](./SETUP.md)
 

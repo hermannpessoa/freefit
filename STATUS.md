@@ -1,4 +1,4 @@
-# 📊 Status do Projeto MyFit
+# 📊 Status do Projeto FreeFit
 
 **Data**: Dezembro 2024
 **Status**: ✅ **ESTRUTURA COMPLETA - PRONTO PARA DESENVOLVIMENTO**
@@ -7,7 +7,7 @@
 
 ## 🎯 Resumo Executivo
 
-O projeto **MyFit** é um webapp de fitness moderno com IA, construído em React 18 + TypeScript + Supabase. A **estrutura completa está implementada e compila com sucesso**. Aguarda apenas:
+O projeto **FreeFit** é um webapp de fitness moderno com IA, construído em React 18 + TypeScript + Supabase. A **estrutura completa está implementada e compila com sucesso**. Aguarda apenas:
 
 1. **Supabase**: Criar tabelas (SQL script pronto)
 2. **Credenciais**: Preencher .env.local

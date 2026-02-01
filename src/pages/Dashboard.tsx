@@ -98,7 +98,7 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-[#001317] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl text-[#00fff3] mb-4">MyFit</div>
+          <div className="text-4xl text-[#00fff3] mb-4">FreeFit</div>
           <div className="inline-block">
             <div className="w-12 h-12 border-4 border-[#00fff3]/20 border-t-[#00fff3] rounded-full animate-spin"></div>
           </div>
@@ -113,7 +113,7 @@ export default function Dashboard() {
       <nav className="border-b border-[#00fff3]/20 bg-[#0a2b31]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <h1 className="text-2xl font-bold text-[#00fff3]">MyFit</h1>
+            <h1 className="text-2xl font-bold text-[#00fff3]">FreeFit</h1>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/settings')}

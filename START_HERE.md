@@ -1,8 +1,8 @@
-# 🎉 MyFit Project - COMPLETED! ✨
+# 🎉 FreeFit Project - COMPLETED! ✨
 
 ## 📌 TL;DR (Resumo Super Rápido)
 
-Seu webapp de fitness **MyFit** foi construído com sucesso! 🚀
+Seu webapp de fitness **FreeFit** foi construído com sucesso! 🚀
 
 - ✅ **React 18 + TypeScript** - Estrutura profissional
 - ✅ **Supabase** - Database + Auth
@@ -246,4 +246,4 @@ Seu projeto é:
 
 ---
 
-**Sucesso! Divirta-se construindo MyFit! 💪🚀**
+**Sucesso! Divirta-se construindo FreeFit! 💪🚀**

@@ -1,10 +1,10 @@
-# 🏋️ MyFit - Webapp de Fitness com IA
+# 🏋️ FreeFit - Webapp de Fitness com IA
 
 > **Status**: ✅ Estrutura completa e compilada com sucesso!
 
 ## 📱 Sobre o Projeto
 
-**MyFit** é um webapp moderno de fitness que utiliza inteligência artificial (OpenRouter) para gerar treinos personalizados. A aplicação oferece:
+**FreeFit** é um webapp moderno de fitness que utiliza inteligência artificial (OpenRouter) para gerar treinos personalizados. A aplicação oferece:
 
 - ✅ Autenticação segura (Supabase Auth)
 - ✅ Geração de treinos com IA (Llama 2 70B)

@@ -37,7 +37,7 @@ export default function AuthPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-[#00fff3] mb-2">MyFit</h1>
+          <h1 className="text-4xl font-bold text-[#00fff3] mb-2">FreeFit</h1>
           <p className="text-gray-400">Seu Personal Trainer Inteligente</p>
         </div>
 

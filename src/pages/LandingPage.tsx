@@ -10,7 +10,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full z-50 border-b border-[#00fff3]/20 bg-[#001317]/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="text-2xl font-bold text-[#00fff3]">MyFit</div>
+            <div className="text-2xl font-bold text-[#00fff3]">FreeFit</div>
             <div className="flex gap-4">
               <button
                 onClick={() => navigate('/login')}
@@ -165,7 +165,7 @@ export default function LandingPage() {
             Pronto para Transformar?
           </h2>
           <p className="text-xl text-gray-300 mb-8">
-            Junte-se a milhares de usuários que já alcançaram seus objetivos com MyFit.
+            Junte-se a milhares de usuários que já alcançaram seus objetivos com FreeFit.
           </p>
           <button
             onClick={() => navigate('/signup')}
@@ -179,7 +179,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-[#00fff3]/20 bg-[#0a2b31] py-8 px-4">
         <div className="max-w-7xl mx-auto text-center text-gray-400">
-          <p>&copy; 2026 MyFit. Todos os direitos reservados.</p>
+          <p>&copy; 2026 FreeFit. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

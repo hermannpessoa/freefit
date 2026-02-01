@@ -1,8 +1,8 @@
-# 🎯 RESUMO EXECUTIVO - MyFit Project
+# 🎯 RESUMO EXECUTIVO - FreeFit Project
 
 ## Status: ✅ **PRODUÇÃO PRONTA**
 
-O projeto **MyFit** foi completado com sucesso. Toda a estrutura está implementada, compilada e pronta para desenvolvimento.
+O projeto **FreeFit** foi completado com sucesso. Toda a estrutura está implementada, compilada e pronta para desenvolvimento.
 
 ---
 

@@ -1,6 +1,6 @@
-# MyFit - Aplicativo de Fitness Inteligente
+# FreeFit - Aplicativo de Fitness Inteligente
 
-MyFit é um webapp React de fitness moderno e completo, alimentado por inteligência artificial, que oferece treinos personalizados, rastreamento de progresso em tempo real e uma comunidade de usuários.
+FreeFit é um webapp React de fitness moderno e completo, alimentado por inteligência artificial, que oferece treinos personalizados, rastreamento de progresso em tempo real e uma comunidade de usuários.
 
 ## 🎯 Funcionalidades Principais
 
@@ -51,8 +51,8 @@ MyFit é um webapp React de fitness moderno e completo, alimentado por inteligê
 
 1. **Clone o repositório**
 ```bash
-git clone https://github.com/seu-usuario/myfit.git
-cd myfit
+git clone https://github.com/seu-usuario/freefit.git
+cd freefit
 ```
 
 2. **Instale as dependências**

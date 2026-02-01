@@ -1,4 +1,4 @@
-# 🚀 Guia Completo de Setup - MyFit
+# 🚀 Guia Completo de Setup - FreeFit
 
 ## Status Atual ✅
 
