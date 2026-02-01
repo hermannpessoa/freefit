@@ -82,7 +82,14 @@ Return only valid JSON, no markdown formatting.
       );
 
       const content = response.data.choices[0].message.content;
-      const workoutData = JSON.parse(content);
+      // Remove markdown code blocks if present
+      let cleanContent = content.trim();
+      if (cleanContent.startsWith('```json')) {
+        cleanContent = cleanContent.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+      } else if (cleanContent.startsWith('```')) {
+        cleanContent = cleanContent.replace(/^```\n?/, '').replace(/\n?```$/, '');
+      }
+      const workoutData = JSON.parse(cleanContent);
 
       return workoutData;
     } catch (error) {
@@ -133,7 +140,14 @@ Return only valid JSON.
       );
 
       const content = response.data.choices[0].message.content;
-      const variations = JSON.parse(content);
+      // Remove markdown code blocks if present
+      let cleanContent = content.trim();
+      if (cleanContent.startsWith('```json')) {
+        cleanContent = cleanContent.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+      } else if (cleanContent.startsWith('```')) {
+        cleanContent = cleanContent.replace(/^```\n?/, '').replace(/\n?```$/, '');
+      }
+      const variations = JSON.parse(cleanContent);
       return variations;
     } catch (error) {
       console.error('Error generating workout variations:', error);
