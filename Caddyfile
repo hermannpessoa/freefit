@@ -1,22 +1,6 @@
 :80 {
   root * /app/dist
+  file_server
+  try_files {path} /index.html
   encode gzip
-  
-  # Match non-static files (for SPA routing)
-  @notStatic {
-    file {
-      try_files {path} /index.html
-    }
-  }
-  
-  # Serve SPA fallback only for non-existent paths
-  handle @notStatic {
-    rewrite * /index.html
-    file_server
-  }
-  
-  # Serve all other files normally (with correct MIME types)
-  handle {
-    file_server
-  }
 }
