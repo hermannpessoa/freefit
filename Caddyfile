@@ -2,21 +2,21 @@
   root * /app/dist
   encode gzip
   
-  # Match static files and serve with proper headers
-  @staticFiles {
-    path *.js *.css *.wasm *.png *.jpg *.jpeg *.gif *.svg *.ico *.webp *.json *.woff *.woff2 *.ttf *.eot
+  # Match non-static files (for SPA routing)
+  @notStatic {
+    file {
+      try_files {path} /index.html
+    }
   }
   
-  header @staticFiles Cache-Control "public, max-age=31536000, immutable"
-  
-  # Serve matched static files
-  route @staticFiles {
+  # Serve SPA fallback only for non-existent paths
+  handle @notStatic {
+    rewrite * /index.html
     file_server
   }
   
-  # SPA routing for everything else
-  route {
-    try_files {path} /index.html
+  # Serve all other files normally (with correct MIME types)
+  handle {
     file_server
   }
 }
