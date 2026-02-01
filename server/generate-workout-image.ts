@@ -23,7 +23,7 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
   try {
     console.log("Generating image for prompt:", prompt);
 
-    // Using Flux model which is newer and more reliable
+    // Using Flux model - corrected API call format
     const predictionResponse = await fetch(replicate_api_url, {
       method: "POST",
       headers: {
@@ -31,24 +31,32 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "black-forest-labs/flux-1-schnell",
+        version: "e04e9dfa6d1e7ce26e53ac1fdf1381286470aa1d5ca8ac8f281c2ae5599504e1",
         input: {
           prompt: prompt,
-          go_fast: true,
-          megapixels: "1",
+          aspect_ratio: "1:1",
           num_outputs: 1,
+          output_format: "jpg",
+          output_quality: 80,
         },
       }),
     });
 
     if (!predictionResponse.ok) {
       const error = await predictionResponse.text();
-      console.error("Replicate API error:", error);
+      console.error("Replicate API error response:", predictionResponse.status, error);
       return null;
     }
 
     const prediction = await predictionResponse.json();
+    console.log("Prediction response:", JSON.stringify(prediction));
+    
     const predictionId = prediction.id;
+    if (!predictionId) {
+      console.error("No prediction ID returned:", prediction);
+      return null;
+    }
+    
     console.log("Prediction created:", predictionId);
 
     // Poll for completion (max 5 minutes)
@@ -63,8 +71,13 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
         },
       });
 
+      if (!statusResponse.ok) {
+        console.error("Status check failed:", statusResponse.status);
+        return null;
+      }
+
       const status = await statusResponse.json();
-      console.log(`Status: ${status.status}`);
+      console.log(`Status: ${status.status} (attempt ${attempts + 1}/${maxAttempts})`);
 
       if (status.status === "succeeded") {
         const output = status.output;
@@ -82,7 +95,7 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
     }
 
     if (!imageUrl) {
-      console.warn("Generation timeout");
+      console.warn("Generation timeout after", maxAttempts * 5, "seconds");
       return null;
     }
 
