@@ -3,7 +3,7 @@ import type { OnboardingData } from '@/types';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
+const MODEL = 'openai/gpt-3.5-turbo';
 
 interface GenerateWorkoutParams {
   onboardingData: OnboardingData;
