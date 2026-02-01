@@ -1,9 +1,7 @@
 import axios from 'axios';
-import Replicate from 'replicate';
 import type { OnboardingData } from '@/types';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
-const REPLICATE_API_KEY = import.meta.env.VITE_REPLICATE_API_KEY || '';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'google/gemini-2.5-flash-lite';
 

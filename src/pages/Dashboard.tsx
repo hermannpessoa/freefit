@@ -31,29 +31,47 @@ export default function Dashboard() {
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
     try {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-      const userWorkouts = await workoutService.getUserWorkouts(user.id);
-      setWorkouts(userWorkouts);
+      try {
+        const userWorkouts = await workoutService.getUserWorkouts(user.id);
+        setWorkouts(userWorkouts);
+      } catch (err) {
+        console.error('Error loading workouts:', err);
+        setWorkouts([]);
+      }
 
-      const logs = await workoutService.getUserProgressLogs(user.id, 30);
+      try {
+        const logs = await workoutService.getUserProgressLogs(user.id, 30);
 
-      const volume = await workoutService.getTotalVolume(user.id, 30);
-      setStats({
-        totalVolume: Math.round(volume),
-        workoutsThisWeek: logs.filter((l) => {
-          const date = new Date(l.date);
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          return date >= weekAgo;
-        }).length,
-        streakDays: calculateStreak(logs),
-      });
+        const volume = await workoutService.getTotalVolume(user.id, 30);
+        setStats({
+          totalVolume: Math.round(volume),
+          workoutsThisWeek: logs.filter((l) => {
+            const date = new Date(l.date);
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return date >= weekAgo;
+          }).length,
+          streakDays: calculateStreak(logs),
+        });
+      } catch (err) {
+        console.error('Error loading stats:', err);
+        setStats({
+          totalVolume: 0,
+          workoutsThisWeek: 0,
+          streakDays: 0,
+        });
+      }
 
       setLoading(false);
     } catch (error: any) {
-      toast.error('Erro ao carregar dados');
+      console.error('Dashboard error:', error);
       setLoading(false);
     }
   };

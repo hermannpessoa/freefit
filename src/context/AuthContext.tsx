@@ -27,11 +27,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initAuth = async () => {
       try {
+        console.log('Starting auth initialization...');
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('Got session:', session ? 'Yes' : 'No');
         if (mounted) {
           setSession(session);
           if (session?.user) {
             try {
+              console.log('Fetching user profile for:', session.user.id);
               await fetchUserProfile(session.user.id);
             } catch (err) {
               console.error('Error fetching profile:', err);
@@ -86,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile from users table...');
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -94,9 +98,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         // Se o usuário não existe ainda em public.users, isso é ok (novo usuário)
-        console.log('User profile not found yet, will be created on first access');
+        console.log('User profile not found (new user):', error.message);
         return;
       }
+      console.log('User profile loaded:', data?.email);
       setUser(data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
