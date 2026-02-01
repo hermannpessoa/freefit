@@ -1,20 +1,11 @@
 :80 {
   root * /app/dist
   
-  # Match existing files
-  @exist {
-    file
-    try_files {path}
-  }
+  # Serve files (file_server auto-detects MIME types)
+  file_server
   
-  # Serve existing files with proper headers
-  handle @exist {
-    header Content-Type "text/plain"
-    file_server
-  }
-  
-  # Fallback for everything else (SPA)
-  handle {
+  # SPA routing - rewrite if file not found
+  error 404 {
     rewrite * /index.html
     file_server
   }
