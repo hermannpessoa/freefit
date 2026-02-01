@@ -10,13 +10,17 @@ interface GeneratedWorkout {
   name: string;
   description: string;
   image?: string;
-  imageUrl?: string;
+  image_url?: string;
   exercises: Array<{
     name: string;
     sets: number;
     reps: string;
     rest_time: number;
     notes: string;
+    alternatives?: Array<{
+      name: string;
+      reason: string;
+    }>;
   }>;
   tips: string[];
 }
@@ -61,9 +65,27 @@ export default function AIWorkoutPage() {
       console.log('Generated workout:', workout);
       setGeneratedWorkout(workout);
 
-      // NOTE: Image generation via Replicate requires backend proxy to avoid CORS issues
-      // Image generation is disabled on client-side for now
-      // TODO: Implement backend endpoint to handle image generation
+      // Generate image via Supabase Edge Function (server-side to avoid CORS)
+      if (workout.image) {
+        let imageLoadingToastId: string | null = null;
+        try {
+          imageLoadingToastId = toast.loading('Gerando imagem do treino...');
+          const imageUrl = await aiService.generateWorkoutImage(
+            workout.image,
+            workout.name,
+            user.id
+          );
+          if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
+          if (imageUrl) {
+            setGeneratedWorkout({ ...workout, image_url: imageUrl });
+            toast.success('Imagem gerada com sucesso!');
+          }
+        } catch (error) {
+          console.error('Image generation failed:', error);
+          if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
+          // Don't show error - images are optional
+        }
+      }
 
       toast.success('Treino gerado com sucesso!');
     } catch (error: any) {
@@ -187,9 +209,9 @@ export default function AIWorkoutPage() {
           </div>
         ) : (
           <div className="bg-[#0a2b31] border-2 border-[#00fff3]/30 rounded-xl p-8">
-            {generatedWorkout.imageUrl && (
+            {generatedWorkout.image_url && (
               <img
-                src={generatedWorkout.imageUrl}
+                src={generatedWorkout.image_url}
                 alt={generatedWorkout.name}
                 className="w-full h-96 object-cover rounded-lg mb-6"
               />
@@ -200,29 +222,46 @@ export default function AIWorkoutPage() {
             {/* Exercises */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-[#00fff3] mb-4">Exercícios</h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {generatedWorkout.exercises && generatedWorkout.exercises.map((exercise: any, index: number) => (
-                  <div
-                    key={index}
-                    className="p-4 bg-[#001317] rounded-lg border border-[#00fff3]/20"
-                  >
-                    <h4 className="text-white font-semibold mb-2">{index + 1}. {exercise.name}</h4>
-                    <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 mb-2">
-                      <div>
-                        <span className="text-[#00fff3]">Séries:</span> {exercise.sets}
+                  <div key={index} className="space-y-3">
+                    <div className="p-4 bg-[#001317] rounded-lg border border-[#00fff3]/20">
+                      <h4 className="text-white font-semibold mb-2">{index + 1}. {exercise.name}</h4>
+                      <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 mb-2">
+                        <div>
+                          <span className="text-[#00fff3]">Séries:</span> {exercise.sets}
+                        </div>
+                        <div>
+                          <span className="text-[#00fff3]">Repetições:</span> {exercise.reps}
+                        </div>
+                        <div>
+                          <span className="text-[#00fff3]">Descanso:</span> {exercise.rest_time}s
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-[#00fff3]">Repetições:</span> {exercise.reps}
-                      </div>
-                      <div>
-                        <span className="text-[#00fff3]">Descanso:</span> {exercise.rest_time}s
-                      </div>
+                      {exercise.notes && (
+                        <p className="text-gray-400 text-sm">{exercise.notes}</p>
+                      )}
                     </div>
-                    {exercise.notes && (
-                      <p className="text-gray-400 text-sm">{exercise.notes}</p>
+
+                    {/* Alternatives */}
+                    {exercise.alternatives && exercise.alternatives.length > 0 && (
+                      <div className="ml-4 space-y-2">
+                        <p className="text-[#00fff3] text-sm font-semibold">💡 Alternativas:</p>
+                        {exercise.alternatives.map((alt: any, altIndex: number) => (
+                          <div
+                            key={altIndex}
+                            className="p-3 bg-[#001317]/60 rounded-lg border border-[#00fff3]/10 text-sm"
+                          >
+                            <p className="text-white font-medium">{alt.name}</p>
+                            <p className="text-gray-400 text-xs mt-1">{alt.reason}</p>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 ))}
+              </div>
+            </div>
               </div>
             </div>
 

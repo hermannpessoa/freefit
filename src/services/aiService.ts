@@ -25,8 +25,12 @@ export const aiService = {
 
     const targetWeightLine = onboardingData.target_weight ? `- Target Weight: ${onboardingData.target_weight} kg (${goalTypeText} ${goalDifferenceKg} kg)` : '';
 
+    const gymInstructions = onboardingData.gym_type === 'gym' ? `
+**IMPORTANTE**: Como o usuário treina em ACADEMIA, dê preferência a exercícios com MÁQUINAS POPULARES de academia (leg press, supino máquina, puxador frontal, rosca máquina, etc). Use máquinas que existem em academias normais.
+` : '';
+
     const prompt = `
-Você é um treinador de fitness profissional. Gere um plano de treino personalizado com base no seguinte perfil do usuário:
+Você é um treinador de fitness profissional especializado. Gere um plano de treino personalizado com base no seguinte perfil do usuário:
 
 - Gênero: ${onboardingData.gender}
 - Idade: ${onboardingData.age}
@@ -39,25 +43,41 @@ ${targetWeightLine}
 - Equipamento Disponível: ${onboardingData.equipments?.join(', ') || 'Apenas peso corporal'}
 - Tempo Disponível: ${onboardingData.available_time} minutos por sessão
 - Duração do Treino: ${workoutDuration} minutos
-
+${gymInstructions}
 Gere uma resposta JSON em PORTUGUÊS com a seguinte estrutura:
 {
   "name": "Nome do treino",
-  "description": "Descrição breve",
-  "image": "Uma descrição detalhada para gerar uma imagem do treino (ex: 'Pessoa fazendo agachamento em uma academia moderna com iluminação azul')",
+  "description": "Descrição breve e motivadora",
+  "image": "Uma descrição detalhada para gerar uma imagem do treino (ex: 'Pessoa fazendo leg press em uma academia moderna com iluminação azul neon')",
   "exercises": [
     {
-      "name": "Nome do exercício",
+      "name": "Nome do exercício principal",
       "sets": número,
       "reps": "Intervalo de repetições como 8-12",
       "rest_time": número em segundos,
-      "notes": "Dicas importantes"
+      "notes": "Dicas importantes sobre a execução",
+      "alternatives": [
+        {
+          "name": "Exercício alternativo 1",
+          "reason": "Por que é uma boa alternativa"
+        },
+        {
+          "name": "Exercício alternativo 2",
+          "reason": "Por que é uma boa alternativa"
+        }
+      ]
     }
   ],
   "tips": ["Dica geral para este treino"]
 }
 
-Retorne APENAS JSON válido, sem formatação markdown.
+REQUISITOS IMPORTANTES:
+- Cada exercício deve ter exatamente 2 alternativas
+- As alternativas devem ser realistas e trabalhar os mesmos músculos
+- Se academia: use máquinas populares que existem em qualquer academia
+- Se casa: use apenas peso corporal ou equipamentos simples
+- Retorne APENAS JSON válido, sem formatação markdown
+- Não inclua código, aspas extras ou caracteres especiais
 `;
 
     try {
@@ -160,9 +180,17 @@ Retorne APENAS JSON válido, SEM formatação markdown.
     }
   },
 
-  async generateWorkoutImage(imagePrompt: string): Promise<string | null> {
-    if (!REPLICATE_API_KEY) {
-      console.warn('Replicate API key not configured - skipping image generation');
+  async generateWorkoutImage(
+    imagePrompt: string,
+    workoutName: string,
+    userId: string
+  ): Promise<string | null> {
+    // Call Supabase Edge Function to generate and upload image
+    // This avoids CORS issues by running on server
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    
+    if (!supabaseUrl) {
+      console.warn('Supabase URL not configured - skipping image generation');
       return null;
     }
 
@@ -172,37 +200,29 @@ Retorne APENAS JSON válido, SEM formatação markdown.
     }
 
     try {
-      const replicate = new Replicate({
-        auth: REPLICATE_API_KEY,
-      });
-
-      // Use SDXL for high-quality image generation
-      const output = await replicate.run(
-        'stability-ai/sdxl:39ed52f2a60c3b36b4aaf38672f9b303c3b691f0ff47db6373b0953d2d9ac8e5',
+      const response = await axios.post(
+        `${supabaseUrl}/functions/v1/generate-workout-image`,
         {
-          input: {
-            prompt: imagePrompt,
-            negative_prompt: 'blurry, low quality, distorted',
-            num_outputs: 1,
-            scheduler: 'K_EULER',
-            num_inference_steps: 25,
-            guidance_scale: 7,
-            width: 768,
-            height: 768,
-            seed: Math.floor(Math.random() * 1000000),
+          imagePrompt,
+          workoutName,
+          userId,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
           },
         }
       );
 
-      // output is an array of image URLs
-      if (Array.isArray(output) && output.length > 0) {
-        return output[0] as string;
+      if (response.data.success && response.data.imageUrl) {
+        return response.data.imageUrl;
       }
 
+      console.warn('Image generation failed:', response.data.error);
       return null;
     } catch (error) {
-      console.error('Error generating image with Replicate:', error);
-      return null; // Don't throw - allow workout to complete without image
+      console.error('Error calling image generation function:', error);
+      return null;
     }
   },
-}
+};
