@@ -6,12 +6,27 @@ import { workoutService } from '@/services/workoutService';
 import toast from 'react-hot-toast';
 import { ChevronLeft, Zap } from 'lucide-react';
 
+interface GeneratedWorkout {
+  name: string;
+  description: string;
+  image?: string;
+  imageUrl?: string;
+  exercises: Array<{
+    name: string;
+    sets: number;
+    reps: string;
+    rest_time: number;
+    notes: string;
+  }>;
+  tips: string[];
+}
+
 export default function AIWorkoutPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState(60);
-  const [generatedWorkout, setGeneratedWorkout] = useState<any>(null);
+  const [generatedWorkout, setGeneratedWorkout] = useState<GeneratedWorkout | null>(null);
 
   const handleGenerateWorkout = async () => {
     if (!user) return;
@@ -36,6 +51,22 @@ export default function AIWorkoutPage() {
       });
 
       setGeneratedWorkout(workout);
+
+      // Generate image if available
+      if (workout.image) {
+        try {
+          toast.loading('Gerando imagem do treino...');
+          const imageUrl = await aiService.generateWorkoutImage(workout.image);
+          if (imageUrl) {
+            setGeneratedWorkout({ ...workout, imageUrl });
+            toast.dismiss();
+          }
+        } catch (error) {
+          console.error('Image generation failed:', error);
+          toast.dismiss();
+        }
+      }
+
       toast.success('Treino gerado com sucesso!');
     } catch (error: any) {
       toast.error(error.message || 'Erro ao gerar treino');
@@ -157,6 +188,13 @@ export default function AIWorkoutPage() {
           </div>
         ) : (
           <div className="bg-[#0a2b31] border-2 border-[#00fff3]/30 rounded-xl p-8">
+            {generatedWorkout.imageUrl && (
+              <img
+                src={generatedWorkout.imageUrl}
+                alt={generatedWorkout.name}
+                className="w-full h-96 object-cover rounded-lg mb-6"
+              />
+            )}
             <h2 className="text-3xl font-bold text-white mb-2">{generatedWorkout.name}</h2>
             <p className="text-gray-400 mb-6">{generatedWorkout.description}</p>
 
