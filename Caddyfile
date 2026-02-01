@@ -1,26 +1,23 @@
 :80 {
   root * /app/dist
+  
+  # Match existing files
+  @exist {
+    file
+    try_files {path}
+  }
+  
+  # Serve existing files with proper headers
+  handle @exist {
+    header Content-Type "text/plain"
+    file_server
+  }
+  
+  # Fallback for everything else (SPA)
+  handle {
+    rewrite * /index.html
+    file_server
+  }
+  
   encode gzip
-  
-  # Force MIME types for specific extensions
-  header /*.js Content-Type "application/javascript; charset=utf-8"
-  header /*.css Content-Type "text/css; charset=utf-8"
-  header /*.wasm Content-Type "application/wasm"
-  header /*.json Content-Type "application/json"
-  header /*.svg Content-Type "image/svg+xml"
-  header /*.png Content-Type "image/png"
-  header /*.jpg Content-Type "image/jpeg"
-  header /*.jpeg Content-Type "image/jpeg"
-  header /*.gif Content-Type "image/gif"
-  header /*.webp Content-Type "image/webp"
-  header /*.woff Content-Type "font/woff"
-  header /*.woff2 Content-Type "font/woff2"
-  header /*.ttf Content-Type "font/ttf"
-  header /*.eot Content-Type "application/vnd.ms-fontobject"
-  
-  # SPA routing
-  try_files {path} /index.html
-  
-  # Serve files
-  file_server
 }
