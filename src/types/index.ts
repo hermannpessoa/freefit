@@ -61,6 +61,7 @@ export interface Workout {
   user_id: string;
   name: string;
   description: string;
+  image?: string;
   duration: number; // minutes
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   exercises: WorkoutExercise[];

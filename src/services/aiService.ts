@@ -24,37 +24,38 @@ export const aiService = {
     const targetWeightLine = onboardingData.target_weight ? `- Target Weight: ${onboardingData.target_weight} kg (${goalTypeText} ${goalDifferenceKg} kg)` : '';
 
     const prompt = `
-You are a professional fitness trainer. Generate a personalized workout plan based on the following user profile:
+Você é um treinador de fitness profissional. Gere um plano de treino personalizado com base no seguinte perfil do usuário:
 
-- Gender: ${onboardingData.gender}
-- Age: ${onboardingData.age}
-- Current Weight: ${onboardingData.weight} kg
-- Height: ${onboardingData.height} cm
-- Objective: ${onboardingData.objective === 'weight_loss' ? 'Weight Loss' : onboardingData.objective === 'muscle_gain' ? 'Muscle Gain' : 'Maintenance'}
+- Gênero: ${onboardingData.gender}
+- Idade: ${onboardingData.age}
+- Peso Atual: ${onboardingData.weight} kg
+- Altura: ${onboardingData.height} cm
+- Objetivo: ${onboardingData.objective === 'weight_loss' ? 'Perda de Peso' : onboardingData.objective === 'muscle_gain' ? 'Ganho Muscular' : 'Manutenção'}
 ${targetWeightLine}
-- Experience Level: ${onboardingData.level}
-- Training Location: ${onboardingData.gym_type === 'gym' ? 'Gym' : 'Home'}
-- Available Equipment: ${onboardingData.equipments?.join(', ') || 'Bodyweight only'}
-- Available Time: ${onboardingData.available_time} minutes per session
-- Workout Duration: ${workoutDuration} minutes
+- Nível de Experiência: ${onboardingData.level}
+- Local de Treino: ${onboardingData.gym_type === 'gym' ? 'Academia' : 'Casa'}
+- Equipamento Disponível: ${onboardingData.equipments?.join(', ') || 'Apenas peso corporal'}
+- Tempo Disponível: ${onboardingData.available_time} minutos por sessão
+- Duração do Treino: ${workoutDuration} minutos
 
-Generate a JSON response with the following structure:
+Gere uma resposta JSON em PORTUGUÊS com a seguinte estrutura:
 {
-  "name": "Workout name",
-  "description": "Brief description",
+  "name": "Nome do treino",
+  "description": "Descrição breve",
+  "image": "Uma descrição detalhada para gerar uma imagem do treino (ex: 'Pessoa fazendo agachamento em uma academia moderna com iluminação azul')",
   "exercises": [
     {
-      "name": "Exercise name",
-      "sets": number,
-      "reps": "Reps range like 8-12",
-      "rest_time": number in seconds,
-      "notes": "Important tips"
+      "name": "Nome do exercício",
+      "sets": número,
+      "reps": "Intervalo de repetições como 8-12",
+      "rest_time": número em segundos,
+      "notes": "Dicas importantes"
     }
   ],
-  "tips": ["General tips for this workout"]
+  "tips": ["Dica geral para este treino"]
 }
 
-Return only valid JSON, no markdown formatting.
+Retorne APENAS JSON válido, sem formatação markdown.
 `;
 
     try {
@@ -107,12 +108,14 @@ Return only valid JSON, no markdown formatting.
     }
 
     const prompt = `
-Generate ${numberOfVariations} workout variations for "${workoutName}".
-Each variation should be slightly different in terms of exercises, sets, and reps.
-Return as a JSON array with each variation having: name, description, exercises array.
-Each exercise should have: name, sets, reps, rest_time.
+Gere ${numberOfVariations} variações de treino para "${workoutName}".
+Cada variação deve ser ligeiramente diferente em termos de exercícios, séries e repetições.
+Retorne como um array JSON com cada variação contendo: name, description, image, exercises array.
+Cada exercício deve ter: name, sets, reps, rest_time.
 
-Return only valid JSON.
+Exemplo de image: "Uma descrição detalhada para gerar uma imagem (ex: 'Pessoa fazendo supino em uma academia com iluminação laranja')"
+
+Retorne APENAS JSON válido, SEM formatação markdown.
 `;
 
     try {
