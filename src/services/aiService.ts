@@ -3,6 +3,7 @@ import type { OnboardingData } from '@/types';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
 
 interface GenerateWorkoutParams {
   onboardingData: OnboardingData;
@@ -60,7 +61,7 @@ Return only valid JSON, no markdown formatting.
       const response = await axios.post(
         OPENROUTER_API_URL,
         {
-          model: 'meta-llama/llama-2-70b-chat',
+          model: MODEL,
           messages: [
             {
               role: 'user',
