@@ -197,7 +197,7 @@ Retorne APENAS JSON válido, SEM formatação markdown.
 
     try {
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/generate-workout-image`,
+        `${supabaseUrl}/functions/v1/rapid-worker`,
         {
           method: "POST",
           headers: {
