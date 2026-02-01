@@ -1,0 +1,36 @@
+:80 {
+  root * /app/dist
+  file_server
+  
+  # Enable gzip compression
+  encode gzip
+  
+  # Set MIME types
+  @js {
+    path *.js
+  }
+  header @js Content-Type "application/javascript; charset=utf-8"
+  
+  @jsx {
+    path *.jsx
+  }
+  header @jsx Content-Type "application/javascript; charset=utf-8"
+  
+  @ts {
+    path *.ts
+  }
+  header @ts Content-Type "text/typescript; charset=utf-8"
+  
+  @tsx {
+    path *.tsx
+  }
+  header @tsx Content-Type "text/typescript; charset=utf-8"
+  
+  @wasm {
+    path *.wasm
+  }
+  header @wasm Content-Type "application/wasm"
+  
+  # SPA routing: serve index.html for all non-file requests
+  try_files {path} /index.html
+}
