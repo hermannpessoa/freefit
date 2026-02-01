@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        version: "39ed52f2a60c3b36b96a16fb5c4c5479534ff685bb6c221by1bf2b4cbf490544",
+        version: "d42d6f71d3ecbe61413ab7088859e418b435add4812424ae6e0d65f70b477143",
         input: {
           prompt: imagePrompt,
           num_inference_steps: 30,
