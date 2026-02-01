@@ -183,88 +183,49 @@ Retorne APENAS JSON válido, SEM formatação markdown.
     workoutName: string,
     userId: string
   ): Promise<string | null> {
-    const REPLICATE_API_KEY = import.meta.env.VITE_REPLICATE_API_KEY;
-    const REPLICATE_API_URL = 'https://api.replicate.com/v1/predictions';
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
-    if (!REPLICATE_API_KEY) {
-      console.warn('Replicate API key not configured - skipping image generation');
+    if (!supabaseUrl) {
+      console.warn("Supabase URL not configured");
       return null;
     }
 
     if (!imagePrompt || imagePrompt.trim().length === 0) {
-      console.warn('Image prompt is empty - skipping image generation');
+      console.warn("Image prompt is empty");
       return null;
     }
 
     try {
-      console.log('Starting image generation for:', workoutName);
-
-      // Create prediction via Replicate API
-      const predictionResponse = await fetch(REPLICATE_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${REPLICATE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          version: '39ed52f2a60c3b36b96a16fb5c4c5479534ff685bb6c221by1bf2b4cbf490544',
-          input: {
-            prompt: imagePrompt,
-            num_inference_steps: 30,
-            guidance_scale: 7.5,
-            scheduler: 'K_EULER',
-            seed: Math.floor(Math.random() * 1000000),
-          },
-        }),
-      });
-
-      if (!predictionResponse.ok) {
-        const error = await predictionResponse.text();
-        throw new Error(`Replicate API error: ${error}`);
-      }
-
-      const prediction = await predictionResponse.json();
-      const predictionId = prediction.id;
-      console.log('Prediction created:', predictionId);
-
-      // Poll for completion (max 10 minutes)
-      let imageUrl: string | null = null;
-      let attempts = 0;
-      const maxAttempts = 120; // 120 * 5 seconds = 10 minutes
-
-      while (attempts < maxAttempts && !imageUrl) {
-        const statusResponse = await fetch(`${REPLICATE_API_URL}/${predictionId}`, {
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/generate-workout-image`,
+        {
+          method: "POST",
           headers: {
-            'Authorization': `Token ${REPLICATE_API_KEY}`,
+            "Content-Type": "application/json",
           },
-        });
-
-        const status = await statusResponse.json();
-        console.log(`Prediction status: ${status.status}`);
-
-        if (status.status === 'succeeded') {
-          const output = status.output;
-          if (Array.isArray(output) && output.length > 0) {
-            imageUrl = output[0];
-          }
-          break;
-        } else if (status.status === 'failed') {
-          throw new Error(`Image generation failed: ${status.error}`);
+          body: JSON.stringify({
+            imagePrompt,
+            workoutName,
+            userId,
+          }),
         }
+      );
 
-        // Wait 5 seconds before polling again
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        attempts++;
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`API error: ${error}`);
       }
 
-      if (!imageUrl) {
-        throw new Error('Image generation timed out');
+      const data = await response.json();
+
+      if (data.success && data.imageUrl) {
+        return data.imageUrl;
       }
 
-      console.log('Image generated:', imageUrl);
-      return imageUrl;
+      console.warn("Image generation failed:", data.error);
+      return null;
     } catch (error) {
-      console.error('Error generating image:', error);
+      console.error("Error generating image:", error);
       return null;
     }
   },
