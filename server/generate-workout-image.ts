@@ -1,5 +1,5 @@
-import Replicate from 'replicate';
-import { createClient } from '@supabase/supabase-js';
+import Replicate from "npm:replicate@3.0.0";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 /**
  * Supabase Edge Function to generate and upload workout images
