@@ -1,36 +1,21 @@
 :80 {
   root * /app/dist
+  encode gzip
   file_server
   
-  # Enable gzip compression
-  encode gzip
+  # Critical: Set JavaScript MIME type for all .js files
+  header *.js Content-Type "application/javascript; charset=utf-8"
+  header *.mjs Content-Type "application/javascript; charset=utf-8"
   
-  # Set MIME types
-  @js {
-    path *.js
-  }
-  header @js Content-Type "application/javascript; charset=utf-8"
+  # WebAssembly support
+  header *.wasm Content-Type "application/wasm"
   
-  @jsx {
-    path *.jsx
-  }
-  header @jsx Content-Type "application/javascript; charset=utf-8"
+  # Ensure cache headers don't cause issues
+  header *.js Cache-Control "public, max-age=3600"
+  header *.css Cache-Control "public, max-age=3600"
+  header *.wasm Cache-Control "public, max-age=3600"
+  header /index.html Cache-Control "public, max-age=0, must-revalidate"
   
-  @ts {
-    path *.ts
-  }
-  header @ts Content-Type "text/typescript; charset=utf-8"
-  
-  @tsx {
-    path *.tsx
-  }
-  header @tsx Content-Type "text/typescript; charset=utf-8"
-  
-  @wasm {
-    path *.wasm
-  }
-  header @wasm Content-Type "application/wasm"
-  
-  # SPA routing: serve index.html for all non-file requests
+  # SPA routing: Always serve index.html for non-file requests
   try_files {path} /index.html
 }
