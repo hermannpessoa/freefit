@@ -3,19 +3,38 @@
   encode gzip
   file_server
   
-  # Critical: Set JavaScript MIME type for all .js files
-  header *.js Content-Type "application/javascript; charset=utf-8"
-  header *.mjs Content-Type "application/javascript; charset=utf-8"
+  # Set correct MIME types using type matcher
+  @js {
+    file
+    path *.js
+  }
+  header @js Content-Type "application/javascript; charset=utf-8"
   
-  # WebAssembly support
-  header *.wasm Content-Type "application/wasm"
+  @mjs {
+    file
+    path *.mjs
+  }
+  header @mjs Content-Type "application/javascript; charset=utf-8"
   
-  # Ensure cache headers don't cause issues
-  header *.js Cache-Control "public, max-age=3600"
-  header *.css Cache-Control "public, max-age=3600"
-  header *.wasm Cache-Control "public, max-age=3600"
+  @wasm {
+    file
+    path *.wasm
+  }
+  header @wasm Content-Type "application/wasm"
+  
+  @css {
+    file
+    path *.css
+  }
+  header @css Content-Type "text/css; charset=utf-8"
+  
+  # Cache control
+  header @js Cache-Control "public, max-age=1year"
+  header @css Cache-Control "public, max-age=1year"
+  header @wasm Cache-Control "public, max-age=1year"
+  
   header /index.html Cache-Control "public, max-age=0, must-revalidate"
   
-  # SPA routing: Always serve index.html for non-file requests
+  # SPA routing
   try_files {path} /index.html
 }
