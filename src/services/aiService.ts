@@ -24,8 +24,24 @@ export const aiService = {
     const targetWeightLine = onboardingData.target_weight ? `- Target Weight: ${onboardingData.target_weight} kg (${goalTypeText} ${goalDifferenceKg} kg)` : '';
 
     const gymInstructions = onboardingData.gym_type === 'gym' ? `
-**IMPORTANTE**: Como o usuário treina em ACADEMIA, dê preferência a exercícios com MÁQUINAS POPULARES de academia (leg press, supino máquina, puxador frontal, rosca máquina, etc). Use máquinas que existem em academias normais.
-` : '';
+
+**REGRA OBRIGATÓRIA - ACADEMIA**:
+O usuário treina em ACADEMIA. Você DEVE usar APENAS exercícios com EQUIPAMENTOS DE ACADEMIA:
+- Máquinas: Leg Press, Supino Máquina, Puxador Frontal, Cadeira Extensora, Cadeira Flexora, Crucifixo Máquina, Remada Máquina, Desenvolvimento Máquina, Rosca Máquina, Tríceps Máquina
+- Cabos/Polia: Tríceps Pulley, Tríceps Corda, Cross Over, Remada Baixa (cabo)
+- Barras e Anilhas: Supino Reto com Barra, Agachamento Livre com Barra, Remada Curvada, Levantamento Terra, Rosca Direta com Barra
+- Halteres: Rosca Alternada, Desenvolvimento com Halteres, Elevação Lateral
+
+NÃO USE exercícios de peso corporal como: flexão, abdominal no chão, prancha, polichinelo, burpee.
+TODOS os exercícios devem usar equipamentos de academia.
+` : `
+
+**REGRA OBRIGATÓRIA - CASA**:
+O usuário treina em CASA. Use APENAS exercícios com peso corporal ou equipamentos simples de casa:
+- Flexões, Agachamentos livres, Afundos, Prancha, Abdominais, Burpees, Mountain Climbers
+- Se tiver halteres: Rosca, Elevação Lateral, etc.
+NÃO USE máquinas de academia.
+`;
 
     const prompt = `
 Você é um treinador de fitness profissional especializado. Gere um plano de treino personalizado com base no seguinte perfil do usuário:
@@ -37,8 +53,7 @@ Você é um treinador de fitness profissional especializado. Gere um plano de tr
 - Objetivo: ${onboardingData.objective === 'weight_loss' ? 'Perda de Peso' : onboardingData.objective === 'muscle_gain' ? 'Ganho Muscular' : 'Manutenção'}
 ${targetWeightLine}
 - Nível de Experiência: ${onboardingData.level}
-- Local de Treino: ${onboardingData.gym_type === 'gym' ? 'Academia' : 'Casa'}
-- Equipamento Disponível: ${onboardingData.equipments?.join(', ') || 'Apenas peso corporal'}
+- Local de Treino: ${onboardingData.gym_type === 'gym' ? 'ACADEMIA (usar máquinas e equipamentos)' : 'CASA (peso corporal)'}
 - Tempo Disponível: ${onboardingData.available_time} minutos por sessão
 - Duração do Treino: ${workoutDuration} minutos
 ${gymInstructions}
@@ -72,8 +87,8 @@ Gere uma resposta JSON em PORTUGUÊS com a seguinte estrutura:
 REQUISITOS IMPORTANTES:
 - Cada exercício deve ter exatamente 2 alternativas
 - As alternativas devem ser realistas e trabalhar os mesmos músculos
-- Se academia: use máquinas populares que existem em qualquer academia
-- Se casa: use apenas peso corporal ou equipamentos simples
+- Se ACADEMIA: OBRIGATÓRIO usar máquinas, cabos, barras e halteres. PROIBIDO exercícios de peso corporal.
+- Se CASA: use apenas peso corporal ou equipamentos simples domésticos
 - Retorne APENAS JSON válido, sem formatação markdown
 - Não inclua código, aspas extras ou caracteres especiais
 `;
