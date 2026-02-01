@@ -1,6 +1,10 @@
 :80 {
   root * /app/dist
-  file_server
-  try_files {path} /index.html
   encode gzip
+  
+  # SPA routing first (try to serve file, if not found serve index.html)
+  try_files {path} /index.html
+  
+  # Then serve files
+  file_server
 }
