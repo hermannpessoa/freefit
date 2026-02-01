@@ -1,5 +1,5 @@
 :80 {
-  root * /app/dist
+  root * /dist
   
   # Serve files (file_server auto-detects MIME types)
   file_server
