@@ -54,16 +54,18 @@ export default function AIWorkoutPage() {
 
       // Generate image if available
       if (workout.image) {
+        let imageLoadingToastId: string | null = null;
         try {
-          toast.loading('Gerando imagem do treino...');
+          imageLoadingToastId = toast.loading('Gerando imagem do treino...');
           const imageUrl = await aiService.generateWorkoutImage(workout.image);
+          if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
           if (imageUrl) {
             setGeneratedWorkout({ ...workout, imageUrl });
-            toast.dismiss();
+            toast.success('Imagem gerada com sucesso!');
           }
         } catch (error) {
           console.error('Image generation failed:', error);
-          toast.dismiss();
+          if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
         }
       }
 
