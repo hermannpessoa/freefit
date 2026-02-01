@@ -23,7 +23,7 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
   try {
     console.log("Generating image for prompt:", prompt);
 
-    // Using Flux model - corrected API call format
+    // Using Flux model with proper API format
     const predictionResponse = await fetch(replicate_api_url, {
       method: "POST",
       headers: {
@@ -31,11 +31,10 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        version: "e04e9dfa6d1e7ce26e53ac1fdf1381286470aa1d5ca8ac8f281c2ae5599504e1",
+        model: "black-forest-labs/flux-1.1-pro",
         input: {
           prompt: prompt,
           aspect_ratio: "1:1",
-          num_outputs: 1,
           output_format: "jpg",
           output_quality: 80,
         },
@@ -83,6 +82,8 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
         const output = status.output;
         if (Array.isArray(output) && output.length > 0) {
           imageUrl = output[0];
+        } else if (typeof output === "string") {
+          imageUrl = output;
         }
         break;
       } else if (status.status === "failed") {
