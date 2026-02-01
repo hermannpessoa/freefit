@@ -31,7 +31,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mounted) {
           setSession(session);
           if (session?.user) {
-            await fetchUserProfile(session.user.id);
+            try {
+              await fetchUserProfile(session.user.id);
+            } catch (err) {
+              console.error('Error fetching profile:', err);
+            }
           }
           setLoading(false);
         }
@@ -43,12 +47,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Timeout de segurança para evitar loading infinito
+    // Timeout de segurança para evitar loading infinito (10 segundos)
     loadingTimeout = setTimeout(() => {
       if (mounted) {
+        console.warn('Auth initialization timeout - forcing loading state off');
         setLoading(false);
       }
-    }, 5000);
+    }, 10000);
 
     initAuth();
 
@@ -59,7 +64,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (mounted) {
         setSession(session);
         if (session?.user) {
-          await fetchUserProfile(session.user.id);
+          try {
+            await fetchUserProfile(session.user.id);
+          } catch (err) {
+            console.error('Error fetching profile on auth change:', err);
+          }
         } else {
           setUser(null);
         }

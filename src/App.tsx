@@ -11,7 +11,7 @@ import AIWorkoutPage from '@/pages/AIWorkoutPage';
 import ProgressPage from '@/pages/ProgressPage';
 
 function AppContent() {
-  const { session, loading } = useAuth();
+  const { session, user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -26,18 +26,21 @@ function AppContent() {
     );
   }
 
+  // If user is logged in but hasn't completed onboarding (missing basic data)
+  const needsOnboarding = session && user && !user.age;
+
   return (
     <Routes>
       <Route path="/" element={session ? <Navigate to="/dashboard" /> : <LandingPage />} />
       <Route path="/login" element={session ? <Navigate to="/dashboard" /> : <AuthPage />} />
       <Route path="/signup" element={session ? <Navigate to="/dashboard" /> : <AuthPage />} />
       <Route path="/onboarding" element={session ? <OnboardingPage /> : <Navigate to="/login" />} />
-      <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/login" />} />
-      <Route path="/create-workout" element={session ? <WorkoutEditor /> : <Navigate to="/login" />} />
-      <Route path="/edit-workout/:id" element={session ? <WorkoutEditor /> : <Navigate to="/login" />} />
-      <Route path="/ai-workout" element={session ? <AIWorkoutPage /> : <Navigate to="/login" />} />
-      <Route path="/progress" element={session ? <ProgressPage /> : <Navigate to="/login" />} />
-      <Route path="/settings" element={session ? <SettingsPage /> : <Navigate to="/login" />} />
+      <Route path="/dashboard" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <Dashboard /> : <Navigate to="/login" />} />
+      <Route path="/create-workout" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <WorkoutEditor /> : <Navigate to="/login" />} />
+      <Route path="/edit-workout/:id" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <WorkoutEditor /> : <Navigate to="/login" />} />
+      <Route path="/ai-workout" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <AIWorkoutPage /> : <Navigate to="/login" />} />
+      <Route path="/progress" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <ProgressPage /> : <Navigate to="/login" />} />
+      <Route path="/settings" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <SettingsPage /> : <Navigate to="/login" />} />
       {/* More routes will be added later */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
