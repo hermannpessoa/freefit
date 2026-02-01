@@ -23,23 +23,27 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
   try {
     console.log("Generating image for prompt:", prompt);
 
-    // Using Flux model with proper API format
-    const predictionResponse = await fetch(replicate_api_url, {
-      method: "POST",
-      headers: {
-        Authorization: `Token ${replicate_api_key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "black-forest-labs/flux-2-max",
-        input: {
-          prompt: prompt,
-          aspect_ratio: "1:1",
-          output_format: "jpg",
-          output_quality: 80,
+    // Using models endpoint which accepts model name directly
+    const predictionResponse = await fetch(
+      "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${replicate_api_key}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          input: {
+            prompt: prompt,
+            go_fast: true,
+            num_outputs: 1,
+            aspect_ratio: "1:1",
+            output_format: "jpg",
+            output_quality: 80,
+          },
+        }),
+      }
+    );
 
     if (!predictionResponse.ok) {
       const error = await predictionResponse.text();
@@ -64,9 +68,9 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
     const maxAttempts = 60; // 60 * 5 seconds = 5 minutes
 
     while (attempts < maxAttempts && !imageUrl) {
-      const statusResponse = await fetch(`${replicate_api_url}/${predictionId}`, {
+      const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
         headers: {
-          Authorization: `Token ${replicate_api_key}`,
+          Authorization: `Bearer ${replicate_api_key}`,
         },
       });
 
