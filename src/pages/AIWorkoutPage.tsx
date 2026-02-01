@@ -260,7 +260,7 @@ export default function AIWorkoutPage() {
                           <img
                             src={exercise.image_url}
                             alt={exercise.name}
-                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                            className="w-[250px] h-[250px] object-cover rounded-lg flex-shrink-0"
                           />
                         )}
                         <div className="flex-1">
