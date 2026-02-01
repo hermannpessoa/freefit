@@ -1,20 +1,28 @@
 :80 {
   root * /app/dist
   
-  # SPA routing - serve index.html for all non-file requests
-  try_files {path} /index.html
+  # Set MIME types using regex matchers
+  @js path_regexp \.js$
+  header @js Content-Type "application/javascript; charset=utf-8"
   
-  # Serve files with compression
+  @css path_regexp \.css$
+  header @css Content-Type "text/css; charset=utf-8"
+  
+  @wasm path_regexp \.wasm$
+  header @wasm Content-Type "application/wasm"
+  
+  # Serve static files with compression
   file_server
   encode gzip
   
-  # Set MIME types
-  @js path *.js
-  header @js Content-Type "application/javascript; charset=utf-8"
-  
-  @css path *.css
-  header @css Content-Type "text/css; charset=utf-8"
-  
-  @wasm path *.wasm
-  header @wasm Content-Type "application/wasm"
+  # SPA routing - rewrite non-existent paths to index.html
+  rewrite {
+    if {http.request.uri} not ^/static
+    if {http.request.uri} not ^/assets
+    if {http.request.uri} not ^/node_modules
+    if {http.request.uri} not ^/favicon
+    if {http.request.uri} not ^/manifest
+    if {http.request.uri} not ^/logo
+    to /index.html
+  }
 }
