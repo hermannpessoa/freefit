@@ -3,7 +3,7 @@ import type { OnboardingData } from '@/types';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'meta-llama/llama-3-8b-instruct:free';
+const MODEL = 'google/gemini-2.5-flash-lite';
 
 interface GenerateWorkoutParams {
   onboardingData: OnboardingData;
@@ -112,7 +112,7 @@ Return only valid JSON.
       const response = await axios.post(
         OPENROUTER_API_URL,
         {
-          model: 'meta-llama/llama-3-8b-instruct:free',
+          model: 'google/gemini-2.5-flash-lite',
           messages: [
             {
               role: 'user',
