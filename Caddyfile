@@ -1,37 +1,20 @@
 :80 {
   root * /app/dist
   
-  # Set correct MIME types BEFORE file_server
-  @js {
-    path *.js
-  }
-  header @js Content-Type "application/javascript; charset=utf-8"
+  # SPA routing - serve index.html for all non-file requests
+  try_files {path} /index.html
   
-  @mjs {
-    path *.mjs
-  }
-  header @mjs Content-Type "application/javascript; charset=utf-8"
-  
-  @wasm {
-    path *.wasm
-  }
-  header @wasm Content-Type "application/wasm"
-  
-  @css {
-    path *.css
-  }
-  header @css Content-Type "text/css; charset=utf-8"
-  
-  # Compression
+  # Serve files with compression
+  file_server
   encode gzip
   
-  # Cache control headers
-  header @js Cache-Control "public, max-age=31536000"
-  header @css Cache-Control "public, max-age=31536000"
-  header @wasm Cache-Control "public, max-age=31536000"
-  header /index.html Cache-Control "public, max-age=0, must-revalidate"
+  # Set MIME types
+  @js path *.js
+  header @js Content-Type "application/javascript; charset=utf-8"
   
-  # File serving and SPA routing
-  file_server
-  try_files {path} /index.html
+  @css path *.css
+  header @css Content-Type "text/css; charset=utf-8"
+  
+  @wasm path *.wasm
+  header @wasm Content-Type "application/wasm"
 }
