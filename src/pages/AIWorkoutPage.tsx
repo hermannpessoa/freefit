@@ -29,27 +29,36 @@ export default function AIWorkoutPage() {
   const [generatedWorkout, setGeneratedWorkout] = useState<GeneratedWorkout | null>(null);
 
   const handleGenerateWorkout = async () => {
-    if (!user) return;
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return;
+    }
 
     setLoading(true);
     try {
+      console.log('User data:', user);
+      
       const onboardingData = {
-        age: user.age,
-        gender: user.gender,
-        weight: user.weight,
-        height: user.height,
-        objective: user.objective,
-        level: user.level,
-        gym_type: user.gym_type,
-        equipments: user.equipments,
-        available_time: user.available_time,
+        age: user.age || 25,
+        gender: user.gender || 'male',
+        weight: user.weight || 70,
+        height: user.height || 170,
+        objective: user.objective || 'maintenance',
+        level: user.level || 'beginner',
+        gym_type: user.gym_type || 'home',
+        equipments: user.equipments || ['bodyweight'],
+        available_time: user.available_time || 60,
+        target_weight: user.target_weight,
       };
+
+      console.log('Onboarding data:', onboardingData);
 
       const workout = await aiService.generatePersonalizedWorkout({
         onboardingData,
         workoutDuration,
       });
 
+      console.log('Generated workout:', workout);
       setGeneratedWorkout(workout);
 
       // Generate image if available
@@ -71,6 +80,7 @@ export default function AIWorkoutPage() {
 
       toast.success('Treino gerado com sucesso!');
     } catch (error: any) {
+      console.error('Error generating workout:', error);
       toast.error(error.message || 'Erro ao gerar treino');
     } finally {
       setLoading(false);
