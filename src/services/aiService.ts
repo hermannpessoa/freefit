@@ -184,9 +184,10 @@ Retorne APENAS JSON válido, SEM formatação markdown.
     userId: string
   ): Promise<string | null> {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    if (!supabaseUrl) {
-      console.warn("Supabase URL not configured");
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn("Supabase configuration not found");
       return null;
     }
 
@@ -202,6 +203,7 @@ Retorne APENAS JSON válido, SEM formatação markdown.
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseAnonKey}`,
           },
           body: JSON.stringify({
             imagePrompt,
