@@ -254,29 +254,33 @@ export default function AIWorkoutPage() {
               <div className="space-y-4">
                 {generatedWorkout.exercises && generatedWorkout.exercises.map((exercise: any, index: number) => (
                   <div key={index} className="space-y-3">
-                    {exercise.image_url && (
-                      <img
-                        src={exercise.image_url}
-                        alt={exercise.name}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                    )}
                     <div className="p-4 bg-[#001317] rounded-lg border border-[#00fff3]/20">
-                      <h4 className="text-white font-semibold mb-2">{index + 1}. {exercise.name}</h4>
-                      <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 mb-2">
-                        <div>
-                          <span className="text-[#00fff3]">Séries:</span> {exercise.sets}
-                        </div>
-                        <div>
-                          <span className="text-[#00fff3]">Repetições:</span> {exercise.reps}
-                        </div>
-                        <div>
-                          <span className="text-[#00fff3]">Descanso:</span> {exercise.rest_time}s
+                      <div className="flex gap-4">
+                        {exercise.image_url && (
+                          <img
+                            src={exercise.image_url}
+                            alt={exercise.name}
+                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h4 className="text-white font-semibold mb-2">{index + 1}. {exercise.name}</h4>
+                          <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 mb-2">
+                            <div>
+                              <span className="text-[#00fff3]">Séries:</span> {exercise.sets}
+                            </div>
+                            <div>
+                              <span className="text-[#00fff3]">Repetições:</span> {exercise.reps}
+                            </div>
+                            <div>
+                              <span className="text-[#00fff3]">Descanso:</span> {exercise.rest_time}s
+                            </div>
+                          </div>
+                          {exercise.notes && (
+                            <p className="text-gray-400 text-sm">{exercise.notes}</p>
+                          )}
                         </div>
                       </div>
-                      {exercise.notes && (
-                        <p className="text-gray-400 text-sm">{exercise.notes}</p>
-                      )}
                     </div>
 
                     {/* Alternatives */}
