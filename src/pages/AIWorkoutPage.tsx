@@ -17,6 +17,7 @@ interface GeneratedWorkout {
     reps: string;
     rest_time: number;
     notes: string;
+    image_url?: string;
     alternatives?: Array<{
       name: string;
       reason: string;
@@ -76,25 +77,42 @@ export default function AIWorkoutPage() {
       console.log('Generated workout:', workout);
       setGeneratedWorkout(workout);
 
-      // Generate image via Supabase Edge Function (server-side to avoid CORS)
+      // Generate images for each exercise
+      if (workout.exercises && userId) {
+        const updatedExercises = [...workout.exercises];
+        
+        for (let i = 0; i < updatedExercises.length; i++) {
+          const exercise = updatedExercises[i];
+          try {
+            const imagePrompt = `Athletic person performing ${exercise.name} exercise, realistic, professional gym setting, full body visible, focused expression`;
+            const imageUrl = await aiService.generateWorkoutImage(
+              imagePrompt,
+              exercise.name,
+              userId
+            );
+            if (imageUrl) {
+              updatedExercises[i].image_url = imageUrl;
+              setGeneratedWorkout({ ...workout, exercises: updatedExercises });
+            }
+          } catch (error) {
+            console.error(`Failed to generate image for ${exercise.name}:`, error);
+          }
+        }
+      }
+
+      // Generate main workout image
       if (workout.image && userId) {
-        let imageLoadingToastId: string | null = null;
         try {
-          imageLoadingToastId = toast.loading('Gerando imagem do treino...');
           const imageUrl = await aiService.generateWorkoutImage(
             workout.image,
             workout.name,
             userId
           );
-          if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
           if (imageUrl) {
-            setGeneratedWorkout({ ...workout, image_url: imageUrl });
-            toast.success('Imagem gerada com sucesso!');
+            setGeneratedWorkout(prev => prev ? { ...prev, image_url: imageUrl } : null);
           }
         } catch (error) {
-          console.error('Image generation failed:', error);
-          if (imageLoadingToastId) toast.dismiss(imageLoadingToastId);
-          // Don't show error - images are optional
+          console.error('Main image generation failed:', error);
         }
       }
 
@@ -236,6 +254,13 @@ export default function AIWorkoutPage() {
               <div className="space-y-4">
                 {generatedWorkout.exercises && generatedWorkout.exercises.map((exercise: any, index: number) => (
                   <div key={index} className="space-y-3">
+                    {exercise.image_url && (
+                      <img
+                        src={exercise.image_url}
+                        alt={exercise.name}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    )}
                     <div className="p-4 bg-[#001317] rounded-lg border border-[#00fff3]/20">
                       <h4 className="text-white font-semibold mb-2">{index + 1}. {exercise.name}</h4>
                       <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 mb-2">

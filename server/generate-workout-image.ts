@@ -14,6 +14,86 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_ANON_KEY") || ""
 );
 
+async function generateImageWithReplicate(prompt: string): Promise<string | null> {
+  if (!replicate_api_key) {
+    console.warn("REPLICATE_API_KEY not configured");
+    return null;
+  }
+
+  try {
+    console.log("Generating image for prompt:", prompt);
+
+    // Using Flux model which is newer and more reliable
+    const predictionResponse = await fetch(replicate_api_url, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${replicate_api_key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "black-forest-labs/flux-1-schnell",
+        input: {
+          prompt: prompt,
+          go_fast: true,
+          megapixels: "1",
+          num_outputs: 1,
+        },
+      }),
+    });
+
+    if (!predictionResponse.ok) {
+      const error = await predictionResponse.text();
+      console.error("Replicate API error:", error);
+      return null;
+    }
+
+    const prediction = await predictionResponse.json();
+    const predictionId = prediction.id;
+    console.log("Prediction created:", predictionId);
+
+    // Poll for completion (max 5 minutes)
+    let imageUrl: string | null = null;
+    let attempts = 0;
+    const maxAttempts = 60; // 60 * 5 seconds = 5 minutes
+
+    while (attempts < maxAttempts && !imageUrl) {
+      const statusResponse = await fetch(`${replicate_api_url}/${predictionId}`, {
+        headers: {
+          Authorization: `Token ${replicate_api_key}`,
+        },
+      });
+
+      const status = await statusResponse.json();
+      console.log(`Status: ${status.status}`);
+
+      if (status.status === "succeeded") {
+        const output = status.output;
+        if (Array.isArray(output) && output.length > 0) {
+          imageUrl = output[0];
+        }
+        break;
+      } else if (status.status === "failed") {
+        console.error("Generation failed:", status.error);
+        return null;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      attempts++;
+    }
+
+    if (!imageUrl) {
+      console.warn("Generation timeout");
+      return null;
+    }
+
+    console.log("Image generated successfully:", imageUrl);
+    return imageUrl;
+  } catch (error) {
+    console.error("Error generating image:", error);
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -34,15 +114,19 @@ Deno.serve(async (req) => {
     console.log("Image generation requested for:", workoutName);
     console.log("Prompt:", imagePrompt);
 
-    // For now, return a placeholder image URL
-    // You can update this later with a working Replicate model
-    const placeholderImageUrl = `https://via.placeholder.com/600x400?text=${encodeURIComponent(workoutName)}`;
+    // Try to generate real image
+    let imageUrl = await generateImageWithReplicate(imagePrompt);
+
+    // Fallback to placeholder if generation fails
+    if (!imageUrl) {
+      console.log("Falling back to placeholder image");
+      imageUrl = `https://via.placeholder.com/600x400?text=${encodeURIComponent(workoutName)}`;
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
-        imageUrl: placeholderImageUrl,
-        message: "Using placeholder image for now",
+        imageUrl: imageUrl,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
