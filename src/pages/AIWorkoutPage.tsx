@@ -6,6 +6,102 @@ import { workoutService } from '@/services/workoutService';
 import toast from 'react-hot-toast';
 import { ChevronLeft, Zap } from 'lucide-react';
 
+// Detailed exercise descriptions for accurate image generation
+const exerciseDescriptions: Record<string, string> = {
+  // Peito / Chest
+  'supino': 'person lying flat on a weight bench, gripping a barbell with both hands shoulder-width apart, arms extended upward pushing the barbell, chest muscles contracted',
+  'supino reto': 'person lying flat on a weight bench, gripping a barbell with both hands shoulder-width apart, arms extended upward pushing the barbell, chest muscles contracted',
+  'supino inclinado': 'person lying on an inclined bench at 45 degrees, pushing a barbell upward with arms extended, upper chest engaged',
+  'supino declinado': 'person lying on a declined bench head lower than feet, pushing a barbell upward, lower chest engaged',
+  'supino máquina': 'person seated at chest press machine, pushing handles forward with arms extended, chest contracted',
+  'crucifixo': 'person lying on bench holding dumbbells with arms extended to sides in a T-shape, then bringing weights together above chest in a hugging motion',
+  'crucifixo máquina': 'person seated at pec deck machine, arms on padded levers, squeezing arms together in front of chest',
+  'flexão': 'person in push-up position, hands on floor shoulder-width apart, body straight as a plank, lowering chest toward floor then pushing back up',
+  'flexão de braço': 'person in push-up position, hands on floor shoulder-width apart, body straight as a plank, lowering chest toward floor then pushing back up',
+  'push-up': 'person in push-up position, hands on floor shoulder-width apart, body straight as a plank, lowering chest toward floor then pushing back up',
+  
+  // Costas / Back
+  'puxada frontal': 'person seated at lat pulldown machine, gripping wide bar overhead, pulling bar down to upper chest, back muscles engaged, elbows pointing down',
+  'puxador frontal': 'person seated at lat pulldown machine, gripping wide bar overhead, pulling bar down to upper chest, back muscles engaged',
+  'remada': 'person bent over at waist holding barbell or dumbbells, pulling weight toward lower chest, back flat, elbow pulled back',
+  'remada curvada': 'person bent over at 45 degrees holding barbell with both hands, pulling weight toward lower chest, back flat parallel to ground',
+  'remada baixa': 'person seated at cable row machine, feet on platform, pulling cable handle toward abdomen, back straight, squeezing shoulder blades',
+  'remada máquina': 'person seated at rowing machine, chest against pad, pulling handles toward torso, back muscles contracted',
+  'barra fixa': 'person hanging from pull-up bar with arms fully extended, pulling body upward until chin is above bar, back and biceps engaged',
+  'pull-up': 'person hanging from pull-up bar with arms fully extended, pulling body upward until chin is above bar, wide grip, back muscles engaged',
+  'levantamento terra': 'person standing with barbell on floor, bending at hips and knees to grip bar, then standing up straight lifting the barbell, back straight throughout',
+  
+  // Ombros / Shoulders
+  'desenvolvimento': 'person seated or standing, pressing dumbbells or barbell overhead from shoulder level to full arm extension above head',
+  'desenvolvimento máquina': 'person seated at shoulder press machine, pushing handles upward from shoulder level to full extension overhead',
+  'elevação lateral': 'person standing holding dumbbells at sides, raising arms out to sides until parallel to floor forming a T-shape, slight bend in elbows',
+  'elevação frontal': 'person standing holding dumbbells in front of thighs, raising one or both arms forward to shoulder height, arms straight',
+  'crucifixo inverso': 'person bent over or on incline bench face down, raising dumbbells out to sides squeezing rear deltoids and upper back',
+  
+  // Braços / Arms
+  'rosca direta': 'person standing holding barbell or dumbbells with palms facing up, curling weight toward shoulders by bending elbows, biceps contracted',
+  'rosca alternada': 'person standing holding dumbbells at sides, alternating curling each arm up toward shoulder, biceps engaged',
+  'rosca martelo': 'person standing holding dumbbells with palms facing each other (neutral grip), curling weights toward shoulders',
+  'rosca concentrada': 'person seated on bench, elbow resting on inner thigh, curling dumbbell toward shoulder with one arm, bicep fully contracted',
+  'rosca máquina': 'person seated at bicep curl machine, curling handles toward shoulders, biceps isolated',
+  'tríceps pulley': 'person standing at cable machine, gripping rope or bar attachment, pushing down by extending arms while keeping elbows at sides',
+  'tríceps corda': 'person standing at cable machine with rope attachment, pushing rope down and spreading ends apart at bottom, triceps engaged',
+  'tríceps francês': 'person lying on bench or standing, holding dumbbell or barbell overhead, lowering weight behind head by bending elbows, then extending arms',
+  'tríceps testa': 'person lying on bench holding barbell or dumbbells, lowering weight toward forehead by bending elbows, then extending arms up',
+  'mergulho': 'person between parallel bars or on bench, lowering body by bending arms then pushing back up, triceps engaged',
+  'dip': 'person between parallel bars, arms straight supporting body, lowering by bending elbows then pushing back up',
+  
+  // Pernas / Legs
+  'agachamento': 'person standing with barbell on upper back or holding dumbbells, bending knees and hips to lower body as if sitting back into chair, thighs parallel to floor, then standing',
+  'agachamento livre': 'person standing with barbell across upper back, feet shoulder-width apart, squatting down until thighs are parallel to floor, then standing up',
+  'agachamento máquina': 'person in smith machine or hack squat, squatting down with back against pad, legs bending to 90 degrees',
+  'leg press': 'person seated in leg press machine, feet on platform shoulder-width apart, pushing platform away by extending legs, then lowering with control',
+  'cadeira extensora': 'person seated at leg extension machine, ankles behind padded roller, extending legs straight out by contracting quadriceps',
+  'cadeira flexora': 'person lying face down or seated at leg curl machine, curling heels toward buttocks by contracting hamstrings',
+  'mesa flexora': 'person lying face down on leg curl machine, ankles under padded roller, curling heels toward buttocks',
+  'stiff': 'person standing holding barbell or dumbbells, hinging at hips with slight knee bend, lowering weight along legs while keeping back straight, feeling hamstring stretch',
+  'afundo': 'person stepping forward into lunge position, front knee bent at 90 degrees over ankle, back knee almost touching floor, then pushing back to standing',
+  'passada': 'person stepping forward into lunge position, front knee bent at 90 degrees over ankle, back knee almost touching floor',
+  'panturrilha': 'person standing on edge of step or calf raise machine, raising up on toes then lowering heels below platform level',
+  'elevação de panturrilha': 'person standing on edge of platform, raising up onto balls of feet by contracting calves, then lowering heels',
+  
+  // Core / Abdominais
+  'abdominal': 'person lying on back with knees bent, hands behind head, curling upper body toward knees contracting abdominal muscles',
+  'abdominal crunch': 'person lying on back with knees bent feet flat, curling shoulders off floor toward knees, contracting abs',
+  'prancha': 'person in plank position, forearms on floor, body forming straight line from head to heels, core engaged, holding position',
+  'plank': 'person in plank position, forearms on floor, body forming straight line from head to heels, core engaged',
+  'prancha lateral': 'person on side with forearm on floor, body in straight line, hips raised off ground, obliques engaged',
+  'elevação de pernas': 'person lying on back or hanging from bar, raising straight legs up toward ceiling, lower abs engaged',
+  'mountain climber': 'person in push-up position, alternating bringing knees toward chest in running motion, core engaged',
+  
+  // Cardio
+  'corrida': 'person running on treadmill or outdoors, arms swinging naturally, legs in running stride',
+  'bicicleta': 'person on stationary bike, pedaling with legs, hands on handlebars, cardio exercise',
+  'elíptico': 'person on elliptical machine, arms and legs moving in smooth elliptical motion',
+  'burpee': 'person performing burpee: squatting down, jumping feet back to plank, doing push-up, jumping feet forward, then jumping up with arms overhead',
+  'jumping jack': 'person jumping with legs spread wide and arms raised overhead, then jumping back to standing with arms at sides',
+  'polichinelo': 'person jumping with legs spread wide and arms raised overhead, then jumping back to standing with arms at sides',
+};
+
+function buildExerciseImagePrompt(exerciseName: string): string {
+  const nameLower = exerciseName.toLowerCase().trim();
+  
+  // Try to find exact match first
+  if (exerciseDescriptions[nameLower]) {
+    return `Fitness photography, ${exerciseDescriptions[nameLower]}, professional gym environment, good lighting, athletic person, realistic, high quality, clear demonstration of proper form`;
+  }
+  
+  // Try partial match
+  for (const [key, description] of Object.entries(exerciseDescriptions)) {
+    if (nameLower.includes(key) || key.includes(nameLower)) {
+      return `Fitness photography, ${description}, professional gym environment, good lighting, athletic person, realistic, high quality, clear demonstration of proper form`;
+    }
+  }
+  
+  // Fallback to generic but detailed prompt
+  return `Fitness photography, athletic person performing ${exerciseName} exercise with proper form and technique, professional gym environment with equipment, good lighting, realistic, high quality, clear demonstration of the movement, full body visible`;
+}
+
 interface GeneratedWorkout {
   name: string;
   description: string;
@@ -84,7 +180,8 @@ export default function AIWorkoutPage() {
         for (let i = 0; i < updatedExercises.length; i++) {
           const exercise = updatedExercises[i];
           try {
-            const imagePrompt = `Athletic person performing ${exercise.name} exercise, realistic, professional gym setting, full body visible, focused expression`;
+            // Build a detailed, exercise-specific prompt
+            const imagePrompt = buildExerciseImagePrompt(exercise.name);
             const imageUrl = await aiService.generateWorkoutImage(
               imagePrompt,
               exercise.name,
