@@ -1,7 +1,9 @@
 import axios from 'axios';
+import Replicate from 'replicate';
 import type { OnboardingData } from '@/types';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+const REPLICATE_API_KEY = import.meta.env.VITE_REPLICATE_API_KEY || '';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'google/gemini-2.5-flash-lite';
 
@@ -157,4 +159,50 @@ Retorne APENAS JSON válido, SEM formatação markdown.
       throw error;
     }
   },
-};
+
+  async generateWorkoutImage(imagePrompt: string): Promise<string | null> {
+    if (!REPLICATE_API_KEY) {
+      console.warn('Replicate API key not configured - skipping image generation');
+      return null;
+    }
+
+    if (!imagePrompt || imagePrompt.trim().length === 0) {
+      console.warn('Image prompt is empty - skipping image generation');
+      return null;
+    }
+
+    try {
+      const replicate = new Replicate({
+        auth: REPLICATE_API_KEY,
+      });
+
+      // Use SDXL for high-quality image generation
+      const output = await replicate.run(
+        'stability-ai/sdxl:39ed52f2a60c3b36b4aaf38672f9b303c3b691f0ff47db6373b0953d2d9ac8e5',
+        {
+          input: {
+            prompt: imagePrompt,
+            negative_prompt: 'blurry, low quality, distorted',
+            num_outputs: 1,
+            scheduler: 'K_EULER',
+            num_inference_steps: 25,
+            guidance_scale: 7,
+            width: 768,
+            height: 768,
+            seed: Math.floor(Math.random() * 1000000),
+          },
+        }
+      );
+
+      // output is an array of image URLs
+      if (Array.isArray(output) && output.length > 0) {
+        return output[0] as string;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error generating image with Replicate:', error);
+      return null; // Don't throw - allow workout to complete without image
+    }
+  },
+}
