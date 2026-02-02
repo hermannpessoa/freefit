@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { OnboardingData } from '@/types';
+import { workoutService } from './workoutService';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
@@ -214,106 +215,66 @@ REQUISITOS IMPORTANTES:
     
     for (let i = 0; i < numberOfWorkouts; i++) {
       if (i % 2 === 0 && legDays > 0) {
-        workoutFocuses.push('PERNA (prioridade: perna, mas trabalhe peito, costas e braço também)');
+        workoutFocuses.push('PERNA');
         legDays--;
       } else if (armDays > 0) {
-        workoutFocuses.push('BRAÇO (prioridade: braço, mas trabalhe peito, costas e perna também)');
+        workoutFocuses.push('BRAÇO');
         armDays--;
       } else {
-        workoutFocuses.push('PERNA (prioridade: perna, mas trabalhe peito, costas e braço também)');
+        workoutFocuses.push('PERNA');
         legDays--;
       }
     }
 
-    const goalDifferenceKg = Math.abs((onboardingData.target_weight || onboardingData.weight) - onboardingData.weight);
-    const goalTypeText = onboardingData.target_weight ? (onboardingData.target_weight > onboardingData.weight ? 'GAIN' : onboardingData.target_weight < onboardingData.weight ? 'LOSE' : 'MAINTAIN') : '';
+    const focusInstructions = workoutFocuses.map((focus, idx) => {
+      const dayNum = idx + 1;
+      if (focus === 'PERNA') {
+        return `DIA ${dayNum} - FOCO PERNA: Inclua 4-5 exercícios de perna (agachamento, leg press, cadeira extensora, cadeira flexora), 2-3 exercícios de braço, 2 exercícios de peito/costas, 1 exercício de abdomen.`;
+      } else {
+        return `DIA ${dayNum} - FOCO BRAÇO: Inclua 4-5 exercícios de braço (rosca direta, rosca alternada, tríceps corda, tríceps pulley), 2-3 exercícios de perna, 2 exercícios de peito/costas, 1 exercício de abdomen.`;
+      }
+    }).join('\n');
 
-    const targetWeightLine = onboardingData.target_weight ? `- Target Weight: ${onboardingData.target_weight} kg (${goalTypeText} ${goalDifferenceKg} kg)` : '';
+    const gymType = onboardingData.gym_type === 'gym' ? 'ACADEMIA' : 'CASA';
 
-    const gymInstructions = onboardingData.gym_type === 'gym' ? `
-
-**REGRA OBRIGATÓRIA - ACADEMIA**:
-O usuário treina em ACADEMIA. Você DEVE usar APENAS exercícios com EQUIPAMENTOS DE ACADEMIA:
-- Máquinas: Leg Press, Supino Máquina, Puxador Frontal, Cadeira Extensora, Cadeira Flexora, Crucifixo Máquina, Remada Máquina, Desenvolvimento Máquina, Rosca Máquina, Tríceps Máquina
-- Cabos/Polia: Tríceps Pulley, Tríceps Corda, Cross Over, Remada Baixa (cabo)
-- Barras e Anilhas: Supino Reto com Barra, Agachamento Livre com Barra, Remada Curvada, Levantamento Terra, Rosca Direta com Barra
-- Halteres: Rosca Alternada, Desenvolvimento com Halteres, Elevação Lateral
-
-NÃO USE exercícios de peso corporal como: flexão, abdominal no chão, prancha, polichinelo, burpee.
-TODOS os exercícios devem usar equipamentos de academia.
-` : `
-
-**REGRA OBRIGATÓRIA - CASA**:
-O usuário treina em CASA. Use APENAS exercícios com peso corporal ou equipamentos simples de casa:
-- Flexões, Agachamentos livres, Afundos, Prancha, Abdominais, Burpees, Mountain Climbers
-- Se tiver halteres: Rosca, Elevação Lateral, etc.
-NÃO USE máquinas de academia.
-`;
-
-    const prompt = `
-Você é um treinador de fitness profissional especializado. Gere ${numberOfWorkouts} planos de treino DIFERENTES e PERSONALIZADOS.
-
-**PERFIL DO USUÁRIO:**
+    const prompt = `Gere ${numberOfWorkouts} planos de treino em JSON válido. Informações do usuário:
 - Gênero: ${onboardingData.gender}
 - Idade: ${onboardingData.age}
-- Peso Atual: ${onboardingData.weight} kg
+- Peso: ${onboardingData.weight} kg
 - Altura: ${onboardingData.height} cm
 - Objetivo: ${onboardingData.objective === 'weight_loss' ? 'Perda de Peso' : onboardingData.objective === 'muscle_gain' ? 'Ganho Muscular' : 'Manutenção'}
-${targetWeightLine}
-- Nível de Experiência: ${onboardingData.level}
-- Local de Treino: ${onboardingData.gym_type === 'gym' ? 'ACADEMIA (usar máquinas e equipamentos)' : 'CASA (peso corporal)'}
-- Duração de cada Treino: ${workoutDuration} minutos
-${gymInstructions}
+- Nível: ${onboardingData.level}
+- Local: ${gymType}
+- Duração: ${workoutDuration} minutos
 
-**FOCOS DOS TREINOS (em ordem):**
-${workoutFocuses.map((focus, idx) => `${idx + 1}. Dia ${idx + 1}: ${focus}`).join('\n')}
+FOCOS OBRIGATÓRIOS DOS TREINOS:
+${focusInstructions}
 
-**IMPORTANTE:**
-- Cada treino deve ter um foco diferente conforme listado acima
-- Todos os treinos devem trabalhar o corpo TODO (perna + braço + peito + costas)
-- O foco listado é a PRIORIDADE, não a exclusividade
-- Os treinos devem ser variados e diferentes entre si
-- Responda em JSON válido sem markdown
+INSTRUÇÕES:
+1. Cada treino DEVE ter EXATAMENTE o foco especificado acima
+2. Use exercícios apropriados para ${gymType}
+3. Cada treino deve ter 8-10 exercícios
+4. Retorne APENAS JSON válido, sem markdown
+5. Cada exercício tem: name, sets (número), reps (string tipo "8-12"), rest_time (segundos)
 
-Gere uma resposta JSON em PORTUGUÊS com a seguinte estrutura para CADA um dos ${numberOfWorkouts} treinos:
+Retorne no exato formato:
 {
   "workouts": [
     {
-      "day": número do dia (1, 2, 3, etc),
-      "name": "Nome único do treino (ex: Perna + Braço)",
-      "focus": "O foco deste treino (ex: Perna)",
-      "description": "Descrição breve e motivadora",
+      "day": 1,
+      "name": "Nome do treino",
+      "focus": "PERNA ou BRAÇO",
       "exercises": [
         {
-          "name": "Nome do exercício",
-          "sets": número,
-          "reps": "Intervalo de repetições como 8-12",
-          "rest_time": número em segundos,
-          "notes": "Dicas sobre execução",
-          "alternatives": [
-            {
-              "name": "Alternativa 1",
-              "reason": "Por que é boa alternativa"
-            },
-            {
-              "name": "Alternativa 2",
-              "reason": "Por que é boa alternativa"
-            }
-          ]
+          "name": "Nome exercício",
+          "sets": 4,
+          "reps": "8-12",
+          "rest_time": 90
         }
-      ],
-      "tips": ["Dica para este treino"]
+      ]
     }
   ]
-}
-
-REQUISITOS IMPORTANTES:
-- Cada exercício deve ter exatamente 2 alternativas
-- Se ACADEMIA: OBRIGATÓRIO máquinas, cabos, barras e halteres. PROIBIDO peso corporal.
-- Se CASA: OBRIGATÓRIO peso corporal ou equipamentos simples. PROIBIDO máquinas.
-- TODOS os treinos devem trabalhar o corpo inteiro, não apenas o foco
-- Retorne APENAS JSON válido, sem formatação markdown
-`;
+}`;
 
     try {
       const response = await axios.post(
@@ -348,7 +309,14 @@ REQUISITOS IMPORTANTES:
       }
       
       const response_data = cleanAndParseJSON(cleanContent);
-      return response_data.workouts || [response_data];
+      console.log('Parsed response:', response_data);
+      console.log('Response workouts:', response_data.workouts);
+      
+      const workouts = response_data.workouts || [response_data];
+      console.log('Final workouts array length:', workouts.length);
+      console.log('Final workouts:', workouts);
+      
+      return workouts;
     } catch (error) {
       console.error('Error generating multiple workouts with AI:', error);
       throw error;
@@ -479,5 +447,95 @@ Retorne APENAS JSON válido, SEM formatação markdown.
   ): Promise<string | null> {
     // Now uses Google Images search via SerpAPI instead of generation
     return this.searchGoogleImage(workoutName);
+  },
+
+  async getOrCreateExerciseWithImage(
+    exerciseName: string,
+    exerciseData?: {
+      description?: string;
+      category?: string;
+      muscle_group?: string;
+      difficulty?: 'beginner' | 'intermediate' | 'advanced';
+      equipment?: string[];
+      instructions?: string[];
+      tips?: string[];
+    }
+  ): Promise<{ id: string; name: string; image_url?: string }> {
+    try {
+      // 1. Buscar exercício no BD
+      const existingExercise = await workoutService.getExerciseByName(exerciseName);
+
+      if (existingExercise) {
+        // Se já tem imagem, retornar
+        if (existingExercise.image_url) {
+          console.log(`✓ Exercício "${exerciseName}" encontrado no BD com imagem`);
+          return {
+            id: existingExercise.id,
+            name: existingExercise.name,
+            image_url: existingExercise.image_url,
+          };
+        }
+
+        // Se não tem imagem, buscar uma
+        console.log(`! Exercício "${exerciseName}" encontrado, mas sem imagem. Buscando...`);
+        const imageUrl = await this.searchGoogleImage(exerciseName);
+
+        if (imageUrl) {
+          // Atualizar exercício com a imagem
+          const updatedExercise = await workoutService.createOrUpdateExercise({
+            name: exerciseName,
+            image_url: imageUrl,
+            ...exerciseData,
+          });
+          console.log(`✓ Imagem adicionada ao exercício "${exerciseName}"`);
+          return {
+            id: updatedExercise.id,
+            name: updatedExercise.name,
+            image_url: updatedExercise.image_url,
+          };
+        }
+
+        // Retornar sem imagem se não conseguir buscar
+        return {
+          id: existingExercise.id,
+          name: existingExercise.name,
+        };
+      }
+
+      // 2. Se não existe, criar com imagem
+      console.log(`+ Criando novo exercício "${exerciseName}"...`);
+      const imageUrl = await this.searchGoogleImage(exerciseName);
+
+      const newExercise = await workoutService.createOrUpdateExercise({
+        name: exerciseName,
+        image_url: imageUrl || undefined,
+        ...exerciseData,
+      });
+
+      console.log(`✓ Exercício "${exerciseName}" criado${imageUrl ? ' com imagem' : ''}`);
+      return {
+        id: newExercise.id,
+        name: newExercise.name,
+        image_url: newExercise.image_url,
+      };
+    } catch (error) {
+      console.error(`Erro ao processar exercício "${exerciseName}":`, error);
+      throw error;
+    }
+  },
+
+  async saveExerciseAlternatives(
+    exerciseId: string,
+    alternatives?: Array<{ name: string; reason: string }>
+  ): Promise<void> {
+    if (!alternatives || alternatives.length === 0) return;
+
+    try {
+      await workoutService.createExerciseAlternatives(exerciseId, alternatives);
+      console.log(`✓ ${alternatives.length} alternativas salvas para exercício ${exerciseId}`);
+    } catch (error) {
+      console.error('Erro ao salvar alternativas:', error);
+      // Não lance erro, só logue
+    }
   },
 };

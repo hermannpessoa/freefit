@@ -44,6 +44,7 @@ function AppContent() {
       <Route path="/dashboard" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <Dashboard />) : <Navigate to="/login" />} />
       <Route path="/create-workout" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <WorkoutEditor />) : <Navigate to="/login" />} />
       <Route path="/edit-workout/:id" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <WorkoutEditor />) : <Navigate to="/login" />} />
+      <Route path="/workout/:id" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <WorkoutEditor />) : <Navigate to="/login" />} />
       <Route path="/ai-workout" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <AIWorkoutPage />) : <Navigate to="/login" />} />
       <Route path="/progress" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <ProgressPage />) : <Navigate to="/login" />} />
       <Route path="/settings" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <SettingsPage />) : <Navigate to="/login" />} />

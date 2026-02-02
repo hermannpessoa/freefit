@@ -33,12 +33,21 @@ export interface Exercise {
   equipment: string[];
   video_url?: string;
   gif_url?: string;
+  image_url?: string;
   instructions: string[];
   tips: string[];
   created_at: string;
 }
 
 // Workout types
+export interface ExerciseAlternative {
+  id: string;
+  exercise_id: string;
+  name: string;
+  reason: string;
+  created_at: string;
+}
+
 export interface WorkoutSet {
   id: string;
   exercise_id: string;
@@ -52,9 +61,11 @@ export interface WorkoutExercise {
   id: string;
   workout_id: string;
   exercise_id: string;
+  selected_alternative_id?: string; // ID da alternativa selecionada, se houver
   order: number;
   sets: WorkoutSet[];
   notes?: string;
+  completed: boolean; // Se o exercício foi completado nesta sessão
 }
 
 export interface Workout {

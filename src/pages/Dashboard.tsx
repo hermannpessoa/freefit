@@ -228,10 +228,10 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="space-y-3">
-              {workouts.slice(0, 5).map((workout) => (
+              {workouts.slice(0, 5).sort((a, b) => a.name.localeCompare(b.name)).map((workout) => (
                 <div
                   key={workout.id}
-                  onClick={() => navigate(`/workout/${workout.id}`)}
+                  onClick={() => navigate(`/edit-workout/${workout.id}`)}
                   className="p-4 bg-[#001317] rounded-lg border border-[#00fff3]/20 hover:border-[#00fff3] cursor-pointer transition flex items-center justify-between"
                 >
                   <div>
