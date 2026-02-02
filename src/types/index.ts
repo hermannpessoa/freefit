@@ -14,6 +14,7 @@ export interface User {
   gym_type: 'home' | 'gym';
   equipments?: string[];
   available_time: number; // minutes
+  training_days?: number; // 1-7 days per week
   created_at: string;
   updated_at: string;
   has_subscription: boolean;

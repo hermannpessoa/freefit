@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/services/supabaseClient';
 import type { OnboardingData } from '@/types';
 import toast from 'react-hot-toast';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
@@ -13,7 +12,7 @@ const equipments = [
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const { user, session, updateProfile } = useAuth();
+  const { user, session } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   
@@ -81,6 +80,7 @@ export default function OnboardingPage() {
         equipments: data.equipments,
         available_time: data.available_time,
         target_weight: data.target_weight,
+        training_days: data.training_days,
         updated_at: new Date().toISOString(),
       };
       
@@ -114,8 +114,8 @@ export default function OnboardingPage() {
       }
       
       toast.success('Perfil criado com sucesso!');
-      console.log('Redirecting to dashboard...');
-      window.location.href = '/dashboard';
+      console.log('Redirecting to ai-workout...');
+      window.location.href = '/ai-workout';
     } catch (error: any) {
       console.error('Error saving profile:', error);
       toast.error(error.message || 'Erro ao salvar perfil');

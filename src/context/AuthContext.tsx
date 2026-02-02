@@ -197,6 +197,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error deleting user profile:', deleteError);
         // Continuar mesmo com erro para limpar sessão
       }
+
+      // Call Edge Function to delete auth user (admin operation)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      try {
+        const deleteResponse = await fetch(
+          `${supabaseUrl}/functions/v1/delete-user-account`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseAnonKey}`,
+            },
+            body: JSON.stringify({ userId }),
+          }
+        );
+
+        if (!deleteResponse.ok) {
+          const error = await deleteResponse.json();
+          console.error('Error deleting user from auth:', error);
+          // Continuar mesmo com erro
+        } else {
+          console.log('User deleted from auth successfully');
+        }
+      } catch (fetchErr) {
+        console.error('Error calling delete user function:', fetchErr);
+        // Continuar mesmo com erro
+      }
     } catch (err) {
       console.error('Error in delete operation:', err);
     }

@@ -4,8 +4,6 @@ import type { OnboardingData } from '@/types';
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'google/gemini-2.5-flash-lite';
-const SERPAPI_API_KEY = import.meta.env.VITE_SERPAPI_API_KEY || '';
-const SERPAPI_URL = 'https://serpapi.com/search';
 
 interface GenerateWorkoutParams {
   onboardingData: OnboardingData;
@@ -70,10 +68,11 @@ function cleanAndParseJSON(jsonString: string): any {
       return JSON.parse(extracted);
     } catch (e) {
       console.error('Could not parse extracted JSON:', e);
+      throw new Error(`Could not parse JSON after all cleanup attempts. Original error: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
-  throw new Error(`Could not parse JSON after all cleanup attempts. Original error: ${e}`);
+  throw new Error('Could not parse JSON after all cleanup attempts');
 }
 
 
@@ -473,11 +472,10 @@ Retorne APENAS JSON válido, SEM formatação markdown.
       return null;
     }
   },
-
   async generateWorkoutImage(
-    imagePrompt: string,
+    _imagePrompt: string,
     workoutName: string,
-    userId: string
+    _userId: string
   ): Promise<string | null> {
     // Now uses Google Images search via SerpAPI instead of generation
     return this.searchGoogleImage(workoutName);
