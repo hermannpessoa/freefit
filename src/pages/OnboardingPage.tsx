@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/services/supabaseClient';
 import type { OnboardingData } from '@/types';
 import toast from 'react-hot-toast';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
@@ -12,7 +13,7 @@ const equipments = [
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const { user, updateProfile } = useAuth();
+  const { user, session, updateProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   
@@ -27,6 +28,7 @@ export default function OnboardingPage() {
     equipments: [],
     available_time: 60,
     target_weight: 75,
+    training_days: 4,
   });
 
   const handleNext = () => {
@@ -42,25 +44,80 @@ export default function OnboardingPage() {
   };
 
   const handleFinish = async () => {
+    console.log('=== handleFinish CALLED ===');
+    
+    const userId = user?.id || session?.user?.id;
+    const userEmail = user?.email || session?.user?.email;
+    
+    console.log('userId:', userId);
+    console.log('userEmail:', userEmail);
+    
+    if (!userId) {
+      console.log('No userId found, redirecting to login');
+      toast.error('Erro: usuário não encontrado. Faça login novamente.');
+      navigate('/login');
+      return;
+    }
+    
     setLoading(true);
+    console.log('Loading set to true');
+    
     try {
-      if (user) {
-        await updateProfile({
-          age: data.age,
-          gender: data.gender,
-          weight: data.weight,
-          height: data.height,
-          objective: data.objective,
-          level: data.level,
-          gym_type: data.gym_type,
-          equipments: data.equipments,
-          available_time: data.available_time,
-          target_weight: data.target_weight,
-        });
-        toast.success('Perfil criado com sucesso!');
-        navigate('/dashboard');
+      // Calcular IMC
+      const imc = Math.round((data.weight / ((data.height / 100) ** 2)) * 100) / 100;
+      console.log('IMC calculated:', imc);
+      
+      const profileData = {
+        id: userId,
+        email: userEmail,
+        age: data.age,
+        gender: data.gender,
+        weight: data.weight,
+        height: data.height,
+        imc,
+        objective: data.objective,
+        level: data.level,
+        gym_type: data.gym_type,
+        equipments: data.equipments,
+        available_time: data.available_time,
+        target_weight: data.target_weight,
+        updated_at: new Date().toISOString(),
+      };
+      
+      console.log('Profile data:', profileData);
+      console.log('Making fetch request directly...');
+      
+      // Usar fetch diretamente com o token da sessão
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const accessToken = session?.access_token;
+      
+      console.log('Using access token:', accessToken ? 'Yes' : 'No (using anon key)');
+      
+      const response = await fetch(`${supabaseUrl}/rest/v1/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${accessToken || supabaseKey}`,
+          'Prefer': 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify(profileData),
+      });
+      
+      console.log('Fetch response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Fetch error:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
+      
+      toast.success('Perfil criado com sucesso!');
+      console.log('Redirecting to dashboard...');
+      window.location.href = '/dashboard';
     } catch (error: any) {
+      console.error('Error saving profile:', error);
       toast.error(error.message || 'Erro ao salvar perfil');
     } finally {
       setLoading(false);
@@ -465,43 +522,50 @@ export default function OnboardingPage() {
       ),
     }] : []),
     {
-      title: 'Tempo Disponível',
-      description: 'Quanto tempo você tem para treinar por dia?',
+      title: 'Quantos Dias de Treino?',
+      description: 'Quantos dias por semana você quer treinar?',
       content: (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
-            <label className="block text-[#00fff3] font-semibold mb-2">
-              {data.available_time} minutos por dia
+            <label className="block text-[#00fff3] font-semibold mb-4 text-lg">
+              {data.training_days} dia{data.training_days !== 1 ? 's' : ''} por semana
             </label>
             <input
               type="range"
-              min="20"
-              max="180"
-              step="10"
-              value={data.available_time}
-              onChange={(e) => setData({ ...data, available_time: parseInt(e.target.value) })}
+              min="1"
+              max="7"
+              step="1"
+              value={data.training_days}
+              onChange={(e) => setData({ ...data, training_days: parseInt(e.target.value) })}
               className="w-full"
             />
             <div className="flex justify-between text-xs text-gray-400 mt-2">
-              <span>20 min</span>
-              <span>180 min</span>
+              <span>1 dia</span>
+              <span>7 dias</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            {[20, 45, 60, 90, 120, 180].map((time) => (
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4, 5, 6, 7].map((days) => (
               <button
-                key={time}
-                onClick={() => setData({ ...data, available_time: time })}
-                className={`py-2 rounded-lg text-sm font-semibold transition ${
-                  data.available_time === time
+                key={days}
+                onClick={() => setData({ ...data, training_days: days })}
+                className={`py-3 rounded-lg font-semibold transition ${
+                  data.training_days === days
                     ? 'bg-[#00fff3] text-[#001317]'
                     : 'bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3]'
                 }`}
               >
-                {time}m
+                {days}x
               </button>
             ))}
+          </div>
+
+          <div className="mt-6 p-4 bg-[#001317]/50 border border-[#00fff3]/20 rounded-lg">
+            <p className="text-[#00fff3] text-sm">
+              💡 Vamos gerar {data.training_days} treino{data.training_days !== 1 ? 's' : ''} personalizados,
+              equilibrando pernas e braços com trabalho de corpo todo!
+            </p>
           </div>
         </div>
       ),

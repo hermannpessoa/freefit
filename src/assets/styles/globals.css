@@ -138,6 +138,21 @@ body,
   animation: pulse-cyan 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Shimmer loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+  background-size: 1000px 100%;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {

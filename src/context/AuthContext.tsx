@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (session?.user) {
             try {
               console.log('Fetching user profile for:', session.user.id);
-              await fetchUserProfile(session.user.id);
+              await fetchUserProfile(session.user.id, session.access_token);
             } catch (err) {
               console.error('Error fetching profile:', err);
             }
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         if (session?.user) {
           try {
-            await fetchUserProfile(session.user.id);
+            await fetchUserProfile(session.user.id, session.access_token);
           } catch (err) {
             console.error('Error fetching profile on auth change:', err);
           }
@@ -87,22 +87,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string, accessToken?: string) => {
     try {
-      console.log('Fetching profile from users table...');
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        // Se o usuário não existe ainda em public.users, isso é ok (novo usuário)
-        console.log('User profile not found (new user):', error.message);
+      console.log('Fetching profile from users table via fetch...');
+      
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      const response = await fetch(
+        `${supabaseUrl}/rest/v1/users?id=eq.${userId}&select=*`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${accessToken || supabaseKey}`,
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        console.log('User profile not found (new user)');
         return;
       }
-      console.log('User profile loaded:', data?.email);
-      setUser(data);
+      
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        console.log('User profile loaded:', data[0]?.email);
+        setUser(data[0]);
+      } else {
+        console.log('User profile not found (new user)');
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
@@ -141,27 +157,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    console.log('signOut in AuthContext called');
+    // Limpar estado local PRIMEIRO
     setUser(null);
+    setSession(null);
+    
+    // Tentar signOut do Supabase em background (não esperar)
+    supabase.auth.signOut().then(() => {
+      console.log('Supabase signOut completed');
+    }).catch((err) => {
+      console.error('Supabase signOut error:', err);
+    });
+    
+    // Limpar localStorage do Supabase manualmente
+    try {
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('sb-') || key.includes('supabase')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      console.error('Error clearing localStorage:', e);
+    }
   };
 
   const deleteAccount = async () => {
-    if (!user) return;
+    const userId = user?.id || session?.user?.id;
+    if (!userId) return;
 
-    // Delete user profile data
-    const { error: deleteError } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', user.id);
+    try {
+      // Delete user profile data from public.users table
+      const { error: deleteError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
 
-    if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Error deleting user profile:', deleteError);
+        // Continuar mesmo com erro para limpar sessão
+      }
+    } catch (err) {
+      console.error('Error in delete operation:', err);
+    }
 
-    // Delete Supabase auth user
-    const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
-    if (authError) throw authError;
-
-    await signOut();
+    // Limpar estado local e fazer signOut
+    setUser(null);
+    setSession(null);
+    
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Error signing out after delete:', err);
+    }
   };
 
   const updateProfile = async (data: Partial<AppUser>) => {

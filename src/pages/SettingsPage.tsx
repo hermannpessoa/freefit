@@ -38,10 +38,13 @@ export default function SettingsPage() {
     setLoading(true);
     try {
       await deleteAccount();
-      navigate('/');
       toast.success('Conta deletada com sucesso');
+      // Forçar navegação para landing page
+      window.location.href = '/';
     } catch (error: any) {
       toast.error(error.message || 'Erro ao deletar conta');
+      // Mesmo com erro, tentar navegar pra fora
+      navigate('/');
     } finally {
       setLoading(false);
     }

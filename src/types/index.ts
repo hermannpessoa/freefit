@@ -161,4 +161,5 @@ export interface OnboardingData {
   gym_type: 'home' | 'gym';
   equipments?: string[];
   available_time: number;
+  training_days: number; // Quantos dias por semana treina
 }

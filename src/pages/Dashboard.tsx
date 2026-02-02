@@ -103,12 +103,18 @@ export default function Dashboard() {
   };
 
   const handleSignOut = async () => {
+    console.log('handleSignOut called');
     try {
       await signOut();
-      navigate('/');
+      console.log('signOut completed');
       toast.success('Logout realizado com sucesso!');
+      // Forçar navegação com reload completo
+      window.location.href = '/';
     } catch (error: any) {
+      console.error('signOut error:', error);
       toast.error(error.message);
+      // Mesmo com erro, navegar para home
+      window.location.href = '/';
     }
   };
 

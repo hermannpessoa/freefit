@@ -26,8 +26,8 @@ function AppContent() {
     );
   }
 
-  // If user is logged in but hasn't completed onboarding (missing basic data)
-  const needsOnboarding = session && user && !user.age;
+  // If user is logged in but hasn't completed onboarding (missing basic data or no profile)
+  const needsOnboarding = session && (!user || !user.age);
 
   return (
     <Routes>

@@ -25,7 +25,7 @@ async function generateImageWithReplicate(prompt: string): Promise<string | null
 
     // Using models endpoint which accepts model name directly
     const predictionResponse = await fetch(
-      "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
+      "https://api.replicate.com/v1/models/xai/grok-2-image/predictions",
       {
         method: "POST",
         headers: {
