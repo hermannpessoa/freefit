@@ -18,6 +18,65 @@ interface GenerateMultipleWorkoutsParams {
   numberOfWorkouts: number;
 }
 
+// Função para limpar e corrigir JSON malformado
+function cleanAndParseJSON(jsonString: string): any {
+  try {
+    // Primeira tentativa: parse direto
+    return JSON.parse(jsonString);
+  } catch (e) {
+    console.warn('Direct parse failed, attempting cleanup...');
+  }
+
+  // Remove markdown code blocks
+  let cleaned = jsonString
+    .replace(/^```json\n?/, '')
+    .replace(/\n?```$/, '')
+    .replace(/^```\n?/, '')
+    .replace(/\n?```$/, '');
+
+  try {
+    // Segunda tentativa: após remover markdown
+    return JSON.parse(cleaned);
+  } catch (e) {
+    console.warn('Markdown removal failed, attempting character fixes...');
+  }
+
+  // Tenta corrigir problemas comuns
+  cleaned = cleaned
+    // Remove comentários //
+    .replace(/\/\/.*$/gm, '')
+    // Corrige aspas simples para duplas (cuidado com contrações)
+    .replace(/: '([^']*)'/g, ': "$1"')
+    // Remove quebras de linha dentro de strings
+    .replace(/(\r\n|\n|\r)/g, ' ')
+    // Remove espaços extras
+    .replace(/\s+/g, ' ')
+    // Corrige vírgulas antes de }
+    .replace(/,(\s*[}\]])/g, '$1');
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {
+    console.warn('Character fixes failed, attempting extraction...');
+  }
+
+  // Última tentativa: extrai apenas o primeiro objeto/array válido
+  const objectMatch = cleaned.match(/\{[\s\S]*\}(?=\s*$|\s*,)/);
+  const arrayMatch = cleaned.match(/\[[\s\S]*\](?=\s*$)/);
+  
+  const extracted = objectMatch?.[0] || arrayMatch?.[0];
+  if (extracted) {
+    try {
+      return JSON.parse(extracted);
+    } catch (e) {
+      console.error('Could not parse extracted JSON:', e);
+    }
+  }
+
+  throw new Error(`Could not parse JSON after all cleanup attempts. Original error: ${e}`);
+}
+
+
 export const aiService = {
   async generatePersonalizedWorkout(params: GenerateWorkoutParams): Promise<any> {
     if (!OPENROUTER_API_KEY) {
@@ -134,25 +193,8 @@ REQUISITOS IMPORTANTES:
         cleanContent = cleanContent.replace(/^```\n?/, '').replace(/\n?```$/, '');
       }
       
-      // Try to fix common JSON issues
-      try {
-        // First attempt: direct parse
-        const workoutData = JSON.parse(cleanContent);
-        return workoutData;
-      } catch (e) {
-        // Second attempt: try to find valid JSON object in the response
-        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            const workoutData = JSON.parse(jsonMatch[0]);
-            return workoutData;
-          } catch (e2) {
-            console.error('Could not parse extracted JSON:', e2);
-            throw new Error('AI response was not valid JSON: ' + e);
-          }
-        }
-        throw e;
-      }
+      const workoutData = cleanAndParseJSON(cleanContent);
+      return workoutData;
     } catch (error) {
       console.error('Error generating workout with AI:', error);
       throw error;
@@ -306,22 +348,8 @@ REQUISITOS IMPORTANTES:
         cleanContent = cleanContent.replace(/^```\n?/, '').replace(/\n?```$/, '');
       }
       
-      try {
-        const response_data = JSON.parse(cleanContent);
-        return response_data.workouts || [response_data];
-      } catch (e) {
-        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            const response_data = JSON.parse(jsonMatch[0]);
-            return response_data.workouts || [response_data];
-          } catch (e2) {
-            console.error('Could not parse extracted JSON:', e2);
-            throw new Error('AI response was not valid JSON: ' + e);
-          }
-        }
-        throw e;
-      }
+      const response_data = cleanAndParseJSON(cleanContent);
+      return response_data.workouts || [response_data];
     } catch (error) {
       console.error('Error generating multiple workouts with AI:', error);
       throw error;
@@ -380,25 +408,8 @@ Retorne APENAS JSON válido, SEM formatação markdown.
         cleanContent = cleanContent.replace(/^```\n?/, '').replace(/\n?```$/, '');
       }
       
-      // Try to fix common JSON issues
-      try {
-        // First attempt: direct parse
-        const variations = JSON.parse(cleanContent);
-        return variations;
-      } catch (e) {
-        // Second attempt: try to find valid JSON array in the response
-        const jsonMatch = cleanContent.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          try {
-            const variations = JSON.parse(jsonMatch[0]);
-            return variations;
-          } catch (e2) {
-            console.error('Could not parse extracted JSON array:', e2);
-            throw new Error('AI response was not valid JSON: ' + e);
-          }
-        }
-        throw e;
-      }
+      const variations = cleanAndParseJSON(cleanContent);
+      return Array.isArray(variations) ? variations : [variations];
     } catch (error) {
       console.error('Error generating workout variations:', error);
       throw error;

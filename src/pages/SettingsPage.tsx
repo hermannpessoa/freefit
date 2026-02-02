@@ -16,6 +16,11 @@ export default function SettingsPage() {
     weight: user?.weight || 0,
     height: user?.height || 0,
   });
+  const [trainingData, setTrainingData] = useState({
+    training_days: user?.training_days || 4,
+    objective: user?.objective || 'muscle_gain',
+    gym_type: user?.gym_type || 'gym',
+  });
 
   const handleUpdateProfile = async () => {
     setLoading(true);
@@ -24,6 +29,18 @@ export default function SettingsPage() {
       toast.success('Perfil atualizado com sucesso!');
     } catch (error: any) {
       toast.error(error.message || 'Erro ao atualizar perfil');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateTrainingData = async () => {
+    setLoading(true);
+    try {
+      await updateProfile(trainingData);
+      toast.success('Dados de treino atualizados com sucesso!');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao atualizar dados de treino');
     } finally {
       setLoading(false);
     }
@@ -123,6 +140,101 @@ export default function SettingsPage() {
               className="w-full py-3 bg-[#00fff3] text-[#001317] rounded-lg font-bold hover:bg-[#00fff3]/90 disabled:opacity-50 transition"
             >
               {loading ? 'Salvando...' : 'Salvar Alterações'}
+            </button>
+          </div>
+        </div>
+
+        {/* Training Data Settings */}
+        <div className="bg-[#0a2b31] border-2 border-[#00fff3]/30 rounded-xl p-6 mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6">⚡ Dados de Treino</h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[#00fff3] font-semibold mb-4">
+                Quantos dias de treino por semana? ({trainingData.training_days}x)
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="7"
+                step="1"
+                value={trainingData.training_days}
+                onChange={(e) => setTrainingData({ ...trainingData, training_days: parseInt(e.target.value) })}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-2">
+                <span>1 dia</span>
+                <span>7 dias</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2 mt-4">
+              {[1, 2, 3, 4, 5, 6, 7].map((days) => (
+                <button
+                  key={days}
+                  onClick={() => setTrainingData({ ...trainingData, training_days: days })}
+                  className={`py-2 rounded-lg font-semibold transition ${
+                    trainingData.training_days === days
+                      ? 'bg-[#00fff3] text-[#001317]'
+                      : 'bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3]'
+                  }`}
+                >
+                  {days}x
+                </button>
+              ))}
+            </div>
+
+            <div>
+              <label className="block text-[#00fff3] font-semibold mb-2">Objetivo Principal</label>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { value: 'weight_loss', label: '📉 Perder Peso' },
+                  { value: 'muscle_gain', label: '💪 Ganhar Músculo' },
+                  { value: 'maintenance', label: '⚖️ Manutenção' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTrainingData({ ...trainingData, objective: opt.value as any })}
+                    className={`py-3 rounded-lg font-semibold transition ${
+                      trainingData.objective === opt.value
+                        ? 'bg-[#00fff3] text-[#001317]'
+                        : 'bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[#00fff3] font-semibold mb-2">Local de Treino</label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { value: 'gym', label: '🏋️ Academia' },
+                  { value: 'home', label: '🏠 Casa' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTrainingData({ ...trainingData, gym_type: opt.value as any })}
+                    className={`py-3 rounded-lg font-semibold transition ${
+                      trainingData.gym_type === opt.value
+                        ? 'bg-[#00fff3] text-[#001317]'
+                        : 'bg-[#001317] border-2 border-[#00fff3]/30 text-[#00fff3]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={handleUpdateTrainingData}
+              disabled={loading}
+              className="w-full py-3 bg-[#00fff3] text-[#001317] rounded-lg font-bold hover:bg-[#00fff3]/90 disabled:opacity-50 transition"
+            >
+              {loading ? 'Salvando...' : 'Atualizar Dados de Treino'}
             </button>
           </div>
         </div>

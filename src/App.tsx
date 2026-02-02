@@ -27,6 +27,10 @@ function AppContent() {
   }
 
   // If user is logged in but hasn't completed onboarding (missing basic data or no profile)
+  // Usuário precisa de onboarding apenas se:
+  // 1. Tem sessão ativa E
+  // 2. Ou não tem user carregado OU não tem age preenchido (dados básicos vazios)
+  // Isso garante onboarding apenas para usuários NOVOS
   const needsOnboarding = session && (!user || !user.age);
 
   return (
@@ -34,13 +38,15 @@ function AppContent() {
       <Route path="/" element={session ? <Navigate to="/dashboard" /> : <LandingPage />} />
       <Route path="/login" element={session ? <Navigate to="/dashboard" /> : <AuthPage />} />
       <Route path="/signup" element={session ? <Navigate to="/dashboard" /> : <AuthPage />} />
+      {/* Onboarding: apenas para usuários com sessão */}
       <Route path="/onboarding" element={session ? <OnboardingPage /> : <Navigate to="/login" />} />
-      <Route path="/dashboard" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <Dashboard /> : <Navigate to="/login" />} />
-      <Route path="/create-workout" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <WorkoutEditor /> : <Navigate to="/login" />} />
-      <Route path="/edit-workout/:id" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <WorkoutEditor /> : <Navigate to="/login" />} />
-      <Route path="/ai-workout" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <AIWorkoutPage /> : <Navigate to="/login" />} />
-      <Route path="/progress" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <ProgressPage /> : <Navigate to="/login" />} />
-      <Route path="/settings" element={needsOnboarding ? <Navigate to="/onboarding" /> : session ? <SettingsPage /> : <Navigate to="/login" />} />
+      {/* Dashboard: redireciona para onboarding APENAS se novo, caso contrário deixa carregar */}
+      <Route path="/dashboard" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <Dashboard />) : <Navigate to="/login" />} />
+      <Route path="/create-workout" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <WorkoutEditor />) : <Navigate to="/login" />} />
+      <Route path="/edit-workout/:id" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <WorkoutEditor />) : <Navigate to="/login" />} />
+      <Route path="/ai-workout" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <AIWorkoutPage />) : <Navigate to="/login" />} />
+      <Route path="/progress" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <ProgressPage />) : <Navigate to="/login" />} />
+      <Route path="/settings" element={session ? (needsOnboarding ? <Navigate to="/onboarding" /> : <SettingsPage />) : <Navigate to="/login" />} />
       {/* More routes will be added later */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

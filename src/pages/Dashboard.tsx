@@ -108,13 +108,13 @@ export default function Dashboard() {
       await signOut();
       console.log('signOut completed');
       toast.success('Logout realizado com sucesso!');
-      // Forçar navegação com reload completo
-      window.location.href = '/';
+      // Navegar direto para login, não para home
+      navigate('/login', { replace: true });
     } catch (error: any) {
       console.error('signOut error:', error);
       toast.error(error.message);
-      // Mesmo com erro, navegar para home
-      window.location.href = '/';
+      // Mesmo com erro, navegar para login
+      navigate('/login', { replace: true });
     }
   };
 
