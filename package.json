@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:full": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "db:init": "node scripts/init-db.js",
@@ -20,6 +21,9 @@
     "db:add-day-of-week": "node scripts/add-day-of-week-column.js",
     "db:check": "node scripts/check-database.js",
     "db:add-templates": "node scripts/add-workout-templates.js",
+    "db:add-exercise-settings": "node scripts/add-user-exercise-settings.js",
+    "db:list-exercise-images": "node scripts/list-exercise-images.js",
+    "db:update-exercise-image": "node scripts/update-exercise-image.js",
     "db:list-duplicates": "node scripts/list-duplicate-exercises.js",
     "db:remove-duplicates": "node scripts/remove-duplicate-exercises.js",
     "check-user": "node scripts/check-user.js"
