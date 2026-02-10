@@ -831,8 +831,7 @@
 
 @media (max-width: 480px) {
     .exercise-card {
-        padding: 14px;
-        margin-bottom: 10px;
+        padding: 16px;
     }
 }
 
@@ -897,10 +896,10 @@
 
 @media (max-width: 480px) {
     .exercise-specs {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        padding: 16px;
-        margin: 14px 0;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        padding: 0;
+        background: transparent;
     }
 }
 
@@ -910,17 +909,16 @@
     align-items: center;
     text-align: center;
     min-width: 0;
-    gap: 4px;
+    gap: 6px;
 }
 
 @media (max-width: 480px) {
     .spec-item {
-        flex-direction: row;
+        /* flex-direction: row; */
         justify-content: space-between;
-        align-items: center;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: var(--radius-sm);
+        padding: 14px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
     }
 }
 
@@ -933,10 +931,9 @@
 
 @media (max-width: 480px) {
     .spec-label {
-        font-size: 0.8rem;
-        letter-spacing: 0.5px;
-        text-align: left;
+        font-size: 0.85rem;
         text-transform: none;
+        font-weight: 500;
     }
 }
 
@@ -949,7 +946,7 @@
 
 @media (max-width: 480px) {
     .spec-value {
-        font-size: 1.05rem;
+        font-size: 1.1rem;
     }
 }
 
@@ -965,8 +962,7 @@
 
 @media (max-width: 480px) {
     .exercise-description {
-        padding: 14px;
-        gap: 10px;
+        padding: 16px;
     }
 }
 
@@ -983,12 +979,11 @@
     line-height: 1.5;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    hyphens: auto;
 }
 
 @media (max-width: 480px) {
     .exercise-description p {
-        font-size: 0.85rem;
-        line-height: 1.5;
+        font-size: 0.9rem;
+        line-height: 1.6;
     }
 }

@@ -6,7 +6,6 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { useApp } from '../../contexts/AppContext';
 import { useSupabaseContext } from '../../contexts/SupabaseContext';
 import { workoutTemplates } from '../../data/workouts';
-import { exerciseDatabase } from '../../data/exercises';
 import { Button, Card, ProgressBar, Badge } from '../../components/ui';
 import 'swiper/css';
 import './Dashboard.css';

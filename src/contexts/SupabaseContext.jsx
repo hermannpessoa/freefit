@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { useAuth, useProfile, useWorkouts, useWorkoutHistory, useProgressRecords, useExercises } from '../hooks/useSupabase-fixed';
+import { useAuth, useProfile, useWorkouts, useWorkoutHistory, useProgressRecords, useExercises, useExerciseSettings } from '../hooks/useSupabase-fixed';
 
 const SupabaseContext = createContext(null);
 
@@ -10,6 +10,7 @@ export function SupabaseProvider({ children }) {
   const history = useWorkoutHistory(auth.user);
   const progress = useProgressRecords(auth.user);
   const exercises = useExercises();
+  const exerciseSettings = useExerciseSettings();
 
   const value = {
     auth,
@@ -18,6 +19,7 @@ export function SupabaseProvider({ children }) {
     history,
     progress,
     exercises,
+    exerciseSettings,
   };
 
   return (

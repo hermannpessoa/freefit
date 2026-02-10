@@ -1,18 +1,20 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Clock, Dumbbell, ChevronLeft, Zap, Info } from 'lucide-react';
+import { Play, Clock, Dumbbell, ChevronLeft, Zap, Info, Download, Copy, Check } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useSupabaseContext } from '../../contexts/SupabaseContext';
-import { exerciseDatabase } from '../../data/exercises';
-import { Button, Card, Badge } from '../../components/ui';
+import { Button, Card, Badge, Modal } from '../../components/ui';
+import { useState } from 'react';
 import './Workouts.css';
 
 export default function WorkoutDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { state, actions } = useApp();
-    const { workouts: supabaseWorkouts } = useSupabaseContext();
+    const { workouts: supabaseWorkouts, exercises: supabaseExercises } = useSupabaseContext();
     const { workouts: contextWorkouts } = state;
+    const [showExportModal, setShowExportModal] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     // Get all workouts including templates from Supabase
     const allWorkouts = supabaseWorkouts.workouts.length > 0
@@ -45,7 +47,7 @@ export default function WorkoutDetailPage() {
 
     // Get exercise details for each exercise in the workout
     const exercisesWithDetails = workout.exercises?.map(ex => {
-        const exerciseDetails = exerciseDatabase.find(e => e.id === ex.exerciseId || e.id === ex.id);
+        const exerciseDetails = supabaseExercises.exercises.find(e => e.id === ex.exerciseId || e.id === ex.id);
         return {
             ...ex,
             details: exerciseDetails
@@ -74,6 +76,41 @@ export default function WorkoutDetailPage() {
             advanced: 'Avançado'
         };
         return labels[difficulty] || difficulty;
+    };
+
+    const exportWorkoutJSON = () => {
+        // Create a clean export object
+        const exportData = {
+            name: workout.name,
+            description: workout.description || '',
+            category: workout.category || 'strength',
+            difficulty: workout.difficulty || 'intermediate',
+            estimatedDuration: workout.estimatedDuration || workout.estimated_duration || 45,
+            muscleGroups: workout.muscleGroups || workout.muscle_groups || [],
+            exercises: workout.exercises?.map(ex => ({
+                exerciseId: ex.exerciseId || ex.id,
+                sets: ex.sets || 3,
+                reps: ex.reps || '10',
+                rest: ex.rest || 60
+            })) || []
+        };
+        return JSON.stringify(exportData, null, 2);
+    };
+
+    const handleCopyJSON = async () => {
+        try {
+            const json = exportWorkoutJSON();
+            await navigator.clipboard.writeText(json);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (error) {
+            console.error('Erro ao copiar:', error);
+        }
+    };
+
+    const handleExport = () => {
+        setShowExportModal(true);
+        setCopied(false);
     };
 
     return (
@@ -130,6 +167,9 @@ export default function WorkoutDetailPage() {
 
                     <Button variant="accent" fullWidth onClick={handleStartWorkout} style={{ marginTop: 16 }}>
                         <Play size={20} /> Iniciar Treino
+                    </Button>
+                    <Button variant="ghost" fullWidth onClick={handleExport} style={{ marginTop: 8 }}>
+                        <Download size={18} /> Exportar Treino
                     </Button>
                 </Card>
 
@@ -195,6 +235,50 @@ export default function WorkoutDetailPage() {
                 {/* Bottom Spacing */}
                 <div style={{ height: 100 }} />
             </div>
+
+            {/* Export Modal */}
+            <Modal
+                isOpen={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                title="Exportar Treino"
+            >
+                <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.9rem' }}>
+                    Copie o JSON abaixo para compartilhar ou importar este treino em outro dispositivo.
+                </p>
+                <div style={{
+                    background: 'var(--bg-tertiary)',
+                    padding: '16px',
+                    borderRadius: 'var(--radius-lg)',
+                    maxHeight: '400px',
+                    overflow: 'auto',
+                    marginBottom: '16px'
+                }}>
+                    <pre style={{
+                        margin: 0,
+                        fontSize: '0.75rem',
+                        color: 'var(--text-secondary)',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word'
+                    }}>
+                        {exportWorkoutJSON()}
+                    </pre>
+                </div>
+                <Button
+                    variant="primary"
+                    fullWidth
+                    onClick={handleCopyJSON}
+                >
+                    {copied ? (
+                        <>
+                            <Check size={18} /> Copiado!
+                        </>
+                    ) : (
+                        <>
+                            <Copy size={18} /> Copiar JSON
+                        </>
+                    )}
+                </Button>
+            </Modal>
         </div>
     );
 }

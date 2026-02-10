@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, SkipForward, Check, X, Clock, Dumbbell, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
-import { exerciseDatabase } from '../../data/exercises';
+import { useSupabaseContext } from '../../contexts/SupabaseContext';
 import { Button, Card, ProgressBar, Modal } from '../../components/ui';
 import './WorkoutActive.css';
 
 export default function WorkoutActivePage() {
     const navigate = useNavigate();
     const { state, actions } = useApp();
+    const { exerciseSettings, exercises: supabaseExercises } = useSupabaseContext();
     const { activeWorkout } = state;
 
     const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -22,18 +23,19 @@ export default function WorkoutActivePage() {
     const [showExitModal, setShowExitModal] = useState(false);
     const [reps, setReps] = useState(0);
     const [weight, setWeight] = useState(0);
+    const [customSets, setCustomSets] = useState({});
 
     // Get exercises with full details
     const exercises = useMemo(() => {
         if (!activeWorkout?.exercises) return [];
         return activeWorkout.exercises.map(ex => ({
             ...ex,
-            details: exerciseDatabase.find(e => e.id === ex.exerciseId) || { name: 'Exercício', description: '' }
+            details: supabaseExercises.exercises.find(e => e.id === ex.exerciseId) || { name: 'Exercício', description: '' }
         }));
-    }, [activeWorkout]);
+    }, [activeWorkout, supabaseExercises.exercises]);
 
     const currentExercise = exercises[currentExerciseIndex];
-    const totalSets = currentExercise?.sets || 3;
+    const totalSets = customSets[currentExercise?.exerciseId] || currentExercise?.sets || 3;
     const targetReps = currentExercise?.reps || '10';
     const restDuration = currentExercise?.rest || 60;
 
@@ -58,14 +60,35 @@ export default function WorkoutActivePage() {
         return () => clearInterval(interval);
     }, [isPaused, isResting]);
 
-    // Initialize reps/weight from previous sets or defaults
+    // Initialize reps/weight from saved settings or previous sets or defaults
     useEffect(() => {
         if (currentExercise) {
+            // Check if user has saved settings for this exercise
+            const savedSettings = exerciseSettings.getExerciseSetting?.(currentExercise.exerciseId);
+
+            // Check if there's a previous set in this workout
             const prevSet = completedSets.find(s => s.exerciseId === currentExercise.exerciseId);
-            setReps(prevSet?.reps || parseInt(targetReps) || 10);
-            setWeight(prevSet?.weight || 0);
+
+            // Priority: previous set in current workout > saved settings > default from workout plan
+            if (prevSet) {
+                setReps(prevSet.reps);
+                setWeight(prevSet.weight);
+            } else if (savedSettings) {
+                setReps(savedSettings.reps || parseInt(targetReps) || 10);
+                setWeight(savedSettings.weight || 0);
+            } else {
+                setReps(parseInt(targetReps) || 10);
+                setWeight(0);
+            }
         }
-    }, [currentExercise, completedSets]);
+    }, [currentExercise, completedSets, exerciseSettings]);
+
+    // Reset set index if it exceeds the new total sets
+    useEffect(() => {
+        if (currentSetIndex >= totalSets) {
+            setCurrentSetIndex(totalSets - 1);
+        }
+    }, [totalSets, currentSetIndex]);
 
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60);
@@ -85,6 +108,11 @@ export default function WorkoutActivePage() {
 
         setCompletedSets(prev => [...prev, newSet]);
 
+        // Save exercise settings (weight and reps) to user profile
+        if (exerciseSettings.saveExerciseSetting) {
+            exerciseSettings.saveExerciseSetting(currentExercise.exerciseId, weight, reps);
+        }
+
         if (currentSetIndex < totalSets - 1) {
             setCurrentSetIndex(prev => prev + 1);
             setIsResting(true);
@@ -102,6 +130,12 @@ export default function WorkoutActivePage() {
     const handleSkipRest = () => {
         setIsResting(false);
         setRestTime(0);
+    };
+
+    const handleSetSetsCount = (exerciseId, newCount) => {
+        if (newCount >= 1) {
+            setCustomSets(prev => ({ ...prev, [exerciseId]: newCount }));
+        }
     };
 
     const handlePreviousExercise = () => {
@@ -137,8 +171,24 @@ export default function WorkoutActivePage() {
         setShowExitModal(true);
     };
 
-    const confirmExit = () => {
-        actions.completeWorkout({ duration: 0, exercisesCompleted: [], totalVolume: 0, xpEarned: 0 });
+    const handleExitWithoutSaving = () => {
+        // Just clear the active workout without saving anything
+        actions.startWorkout(null); // This clears the active workout
+        navigate('/dashboard');
+    };
+
+    const handleFinishCurrentProgress = () => {
+        // Save current progress as a completed workout
+        const totalVolume = completedSets.reduce((acc, set) => acc + (set.reps * set.weight), 0);
+        const xpEarned = Math.max(10, completedSets.length * 5); // At least 10 XP for partial completion
+
+        actions.completeWorkout({
+            duration: Math.floor(elapsedTime / 60),
+            exercisesCompleted: completedSets,
+            totalVolume,
+            xpEarned
+        });
+
         navigate('/dashboard');
     };
 
@@ -215,9 +265,17 @@ export default function WorkoutActivePage() {
                         className="current-exercise"
                     >
                         <div className="exercise-video-area">
-                            <div className="video-placeholder">
-                                <Dumbbell size={48} />
-                            </div>
+                            {currentExercise.details.demo_image || currentExercise.details.demo_video ? (
+                                <img
+                                    src={currentExercise.details.demo_image || currentExercise.details.demo_video}
+                                    alt={currentExercise.details.name}
+                                    className="exercise-media"
+                                />
+                            ) : (
+                                <div className="video-placeholder">
+                                    <Dumbbell size={48} />
+                                </div>
+                            )}
                         </div>
                         <h2 className="exercise-name">{currentExercise.details.name}</h2>
                         <p className="exercise-target">
@@ -244,6 +302,18 @@ export default function WorkoutActivePage() {
                 {/* Input Section */}
                 <div className="input-section">
                     <div className="input-row">
+                        <div className="input-group">
+                            <label>Séries</label>
+                            <div className="stepper">
+                                <button onClick={() => handleSetSetsCount(currentExercise.exerciseId, totalSets - 1)}>−</button>
+                                <input
+                                    type="number"
+                                    value={totalSets}
+                                    onChange={(e) => handleSetSetsCount(currentExercise.exerciseId, parseInt(e.target.value) || 1)}
+                                />
+                                <button onClick={() => handleSetSetsCount(currentExercise.exerciseId, totalSets + 1)}>+</button>
+                            </div>
+                        </div>
                         <div className="input-group">
                             <label>Repetições</label>
                             <div className="stepper">
@@ -282,14 +352,24 @@ export default function WorkoutActivePage() {
             {/* Exit Modal */}
             <Modal isOpen={showExitModal} onClose={() => setShowExitModal(false)} title="Sair do Treino?">
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>
-                    Seu progresso neste treino será perdido. Tem certeza que deseja sair?
+                    Você completou {completedSets.length} {completedSets.length === 1 ? 'série' : 'séries'}. O que deseja fazer?
                 </p>
-                <div style={{ display: 'flex', gap: 12 }}>
-                    <Button variant="ghost" fullWidth onClick={() => setShowExitModal(false)}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <Button variant="primary" fullWidth onClick={() => setShowExitModal(false)}>
                         Continuar Treino
                     </Button>
-                    <Button variant="secondary" fullWidth onClick={confirmExit} style={{ color: 'var(--error-400)' }}>
-                        Sair
+                    {completedSets.length > 0 && (
+                        <Button variant="secondary" fullWidth onClick={handleFinishCurrentProgress}>
+                            Finalizar e Salvar Progresso
+                        </Button>
+                    )}
+                    <Button
+                        variant="ghost"
+                        fullWidth
+                        onClick={handleExitWithoutSaving}
+                        style={{ color: 'var(--error-400)' }}
+                    >
+                        Sair sem Salvar
                     </Button>
                 </div>
             </Modal>

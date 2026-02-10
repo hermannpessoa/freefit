@@ -5,7 +5,6 @@ import { ArrowLeft, Plus, Trash2, Sparkles, Dumbbell, Clock, Target, Zap, Calend
 import { useApp } from '../../contexts/AppContext';
 import { useSupabaseContext } from '../../contexts/SupabaseContext';
 import { Button, Card, Modal, Toast } from '../../components/ui';
-import { exerciseDatabase } from '../../data/exercises';
 import { generateWorkout, generateWeeklyWorkouts, isAIConfigured } from '../../services/aiWorkoutGenerator';
 import './Workouts.css';
 
@@ -29,8 +28,8 @@ export default function WorkoutCreatePage() {
         setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 5000);
     };
 
-    // Use Supabase exercises if available, fallback to local database
-    const exercises = supabaseExercises.exercises.length > 0 ? supabaseExercises.exercises : exerciseDatabase;
+    // Use Supabase exercises
+    const exercises = supabaseExercises.exercises;
 
     // Get user data from profile
     const userData = profile.profile?.onboarding_data || state.onboardingData || {};

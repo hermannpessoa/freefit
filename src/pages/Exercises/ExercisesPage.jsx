@@ -1,13 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, X, Play, ChevronRight, Dumbbell, Bookmark } from 'lucide-react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Navigation } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
+import { Search, Filter, X, Play, ChevronRight, Dumbbell, Bookmark, ChevronLeft } from 'lucide-react';
 import { useSupabaseContext } from '../../contexts/SupabaseContext';
-import { exerciseDatabase, exerciseCategories, difficultyLevels } from '../../data/exercises';
+import { exerciseCategories, difficultyLevels } from '../../data/exerciseConstants';
 import { Card, Badge, Modal, Button } from '../../components/ui';
 import './Exercises.css';
 
@@ -18,6 +13,9 @@ export default function ExercisesPage() {
     const [showFilters, setShowFilters] = useState(false);
     const [selectedExercise, setSelectedExercise] = useState(null);
     const [favorites, setFavorites] = useState([]);
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [touchStart, setTouchStart] = useState(0);
+    const [touchEnd, setTouchEnd] = useState(0);
     const { auth, exercises: supabaseExercises } = useSupabaseContext();
 
     // Use ONLY Supabase exercises as the source of truth
@@ -70,6 +68,52 @@ export default function ExercisesPage() {
         setSelectedCategory(null);
         setSelectedDifficulty(null);
     };
+
+    // Slider navigation
+    const totalSlides = 2; // Video and Image
+
+    const nextSlide = () => {
+        setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    };
+
+    const prevSlide = () => {
+        setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+    };
+
+    // Touch handlers for swipe gestures
+    const handleTouchStart = (e) => {
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > 50;
+        const isRightSwipe = distance < -50;
+
+        if (isLeftSwipe) {
+            nextSlide();
+        }
+        if (isRightSwipe) {
+            prevSlide();
+        }
+
+        // Reset
+        setTouchStart(0);
+        setTouchEnd(0);
+    };
+
+    // Reset slide when modal opens
+    useEffect(() => {
+        if (selectedExercise) {
+            setCurrentSlide(0);
+        }
+    }, [selectedExercise]);
 
     return (
         <div className="exercises-page">
@@ -220,21 +264,22 @@ export default function ExercisesPage() {
             >
                 {selectedExercise && (
                     <div className="exercise-detail">
-                        <div className="media-carousel-container">
-                            <Swiper
-                                modules={[Pagination, Navigation]}
-                                spaceBetween={0}
-                                slidesPerView={1}
-                                navigation
-                                pagination={{ clickable: true }}
-                                className="media-swiper"
-                            >
-                                {/* Slide 1: Video */}
-                                <SwiperSlide>
+                        <div
+                            className="media-carousel-container"
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        >
+                            <div className="media-slider">
+                                <div
+                                    className="media-slides"
+                                    style={{ transform: `translateX(-${currentSlide * 50}%)` }}
+                                >
+                                    {/* Slide 1: Video */}
                                     <div className="media-slide">
-                                        {selectedExercise.videoUrl ? (
+                                        {selectedExercise.demo_video ? (
                                             <iframe
-                                                src={selectedExercise.videoUrl}
+                                                src={selectedExercise.demo_video}
                                                 title={selectedExercise.name}
                                                 frameBorder="0"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -247,13 +292,11 @@ export default function ExercisesPage() {
                                             </div>
                                         )}
                                     </div>
-                                </SwiperSlide>
 
-                                {/* Slide 2: Image/GIF */}
-                                <SwiperSlide>
+                                    {/* Slide 2: Image/GIF */}
                                     <div className="media-slide">
-                                        {selectedExercise.gifUrl ? (
-                                            <img src={selectedExercise.gifUrl} alt={selectedExercise.name} loading="lazy" />
+                                        {selectedExercise.demo_image ? (
+                                            <img src={selectedExercise.demo_image} alt={selectedExercise.name} loading="lazy" />
                                         ) : (
                                             <div className="media-placeholder">
                                                 <Dumbbell size={48} />
@@ -261,8 +304,36 @@ export default function ExercisesPage() {
                                             </div>
                                         )}
                                     </div>
-                                </SwiperSlide>
-                            </Swiper>
+                                </div>
+
+                                {/* Navigation Arrows */}
+                                <button
+                                    className="slider-nav slider-nav-prev"
+                                    onClick={prevSlide}
+                                    aria-label="Anterior"
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
+                                <button
+                                    className="slider-nav slider-nav-next"
+                                    onClick={nextSlide}
+                                    aria-label="Próximo"
+                                >
+                                    <ChevronRight size={24} />
+                                </button>
+
+                                {/* Pagination Dots */}
+                                <div className="slider-pagination">
+                                    {[...Array(totalSlides)].map((_, index) => (
+                                        <button
+                                            key={index}
+                                            className={`slider-dot ${currentSlide === index ? 'active' : ''}`}
+                                            onClick={() => setCurrentSlide(index)}
+                                            aria-label={`Ir para slide ${index + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="detail-section">

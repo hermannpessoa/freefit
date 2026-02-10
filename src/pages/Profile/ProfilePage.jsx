@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Settings, Bell, CreditCard, Shield, HelpCircle, LogOut, ChevronRight, Moon, Smartphone, Heart, Award, Trash2, Target, Calendar, Clock, Dumbbell } from 'lucide-react';
+import { User, Settings, Bell, CreditCard, Shield, HelpCircle, LogOut, ChevronRight, Moon, Smartphone, Heart, Award, Trash2, Target, Calendar, Clock, Dumbbell, Upload } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useSupabaseContext } from '../../contexts/SupabaseContext';
 import { Card, Avatar, Badge, ProgressBar, Button, Modal, Toast } from '../../components/ui';
@@ -10,11 +10,14 @@ import './Profile.css';
 export default function ProfilePage() {
     const navigate = useNavigate();
     const { state, actions } = useApp();
-    const { auth, profile: supabaseProfile } = useSupabaseContext();
+    const { auth, profile: supabaseProfile, workouts: supabaseWorkouts } = useSupabaseContext();
     const [loading, setLoading] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showGoalsModal, setShowGoalsModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [importJSON, setImportJSON] = useState('');
+    const [importError, setImportError] = useState('');
     const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
     const isMountedRef = useRef(true);
     const { profile, subscription, onboardingData } = state;
@@ -148,8 +151,63 @@ export default function ProfilePage() {
         }
     };
 
+    const handleImportWorkout = async () => {
+        setLoading(true);
+        setImportError('');
+
+        try {
+            // Parse JSON
+            const workoutData = JSON.parse(importJSON);
+
+            // Validate required fields
+            if (!workoutData.name || !workoutData.exercises || !Array.isArray(workoutData.exercises)) {
+                throw new Error('JSON inválido: faltam campos obrigatórios (name, exercises)');
+            }
+
+            // Validate exercises
+            for (const ex of workoutData.exercises) {
+                if (!ex.exerciseId) {
+                    throw new Error('JSON inválido: todos os exercícios devem ter um exerciseId');
+                }
+            }
+
+            // Create workout in Supabase
+            const { data, error } = await supabaseWorkouts.createWorkout({
+                name: workoutData.name,
+                description: workoutData.description || '',
+                category: workoutData.category || 'strength',
+                difficulty: workoutData.difficulty || 'intermediate',
+                estimated_duration: workoutData.estimatedDuration || 45,
+                muscle_groups: workoutData.muscleGroups || [],
+                exercises: workoutData.exercises,
+                user_id: auth.user.id
+            });
+
+            if (error) {
+                throw new Error('Erro ao salvar treino: ' + error.message);
+            }
+
+            showToast('Treino importado com sucesso!', 'success');
+            setShowImportModal(false);
+            setImportJSON('');
+            navigate('/workouts');
+        } catch (error) {
+            console.error('Erro ao importar treino:', error);
+            setImportError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOpenImport = () => {
+        setShowImportModal(true);
+        setImportJSON('');
+        setImportError('');
+    };
+
     const menuItems = [
         { icon: Target, label: 'Meus Objetivos', action: () => setShowGoalsModal(true), desc: 'Atualize seus objetivos de treino' },
+        { icon: Upload, label: 'Importar Treino', action: handleOpenImport, desc: 'Importe um treino via JSON' },
         { icon: User, label: 'Editar Perfil', path: '/settings/profile' },
         { icon: Bell, label: 'Notificações', path: '/settings/notifications' },
         { icon: CreditCard, label: 'Assinatura', path: '/subscription', badge: subscription.status === 'trial' ? 'Trial' : null },
@@ -528,6 +586,66 @@ export default function ProfilePage() {
                             loading={loading}
                         >
                             Salvar Alterações
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Import Workout Modal */}
+            <Modal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                title="📥 Importar Treino"
+                description="Cole o JSON do treino exportado para importá-lo"
+            >
+                <div className="import-modal-content">
+                    <textarea
+                        value={importJSON}
+                        onChange={(e) => setImportJSON(e.target.value)}
+                        placeholder='{"name": "Nome do Treino", "exercises": [...]}'
+                        style={{
+                            width: '100%',
+                            minHeight: '250px',
+                            padding: '12px',
+                            background: 'var(--bg-tertiary)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: 'var(--radius-lg)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.85rem',
+                            fontFamily: 'monospace',
+                            resize: 'vertical',
+                            marginBottom: '12px'
+                        }}
+                    />
+                    {importError && (
+                        <p style={{
+                            color: 'var(--error-400)',
+                            fontSize: '0.85rem',
+                            marginBottom: '12px',
+                            padding: '8px 12px',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            borderRadius: 'var(--radius-md)'
+                        }}>
+                            {importError}
+                        </p>
+                    )}
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <Button
+                            variant="ghost"
+                            fullWidth
+                            onClick={() => setShowImportModal(false)}
+                            disabled={loading}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="primary"
+                            fullWidth
+                            onClick={handleImportWorkout}
+                            loading={loading}
+                            disabled={!importJSON.trim()}
+                        >
+                            Salvar Treino
                         </Button>
                     </div>
                 </div>

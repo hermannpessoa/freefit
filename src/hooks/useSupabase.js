@@ -308,3 +308,106 @@ export function useProgressRecords() {
 
   return { records, loading, addRecord };
 }
+
+export function useExerciseSettings() {
+  const [settings, setSettings] = useState({});
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) {
+      setSettings({});
+      setLoading(false);
+      return;
+    }
+
+    fetchSettings();
+
+    const subscription = supabase
+      .channel(`exercise_settings:${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_exercise_settings', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setSettings(s => {
+              const newSettings = { ...s };
+              delete newSettings[payload.old.exercise_id];
+              return newSettings;
+            });
+          } else {
+            setSettings(s => ({
+              ...s,
+              [payload.new.exercise_id]: {
+                weight: parseFloat(payload.new.last_weight) || 0,
+                reps: parseInt(payload.new.last_reps) || 10,
+                lastUsedAt: payload.new.last_used_at
+              }
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => subscription.unsubscribe();
+  }, [user]);
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_exercise_settings')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (!error && data) {
+        const settingsMap = {};
+        data.forEach(item => {
+          settingsMap[item.exercise_id] = {
+            weight: parseFloat(item.last_weight) || 0,
+            reps: parseInt(item.last_reps) || 10,
+            lastUsedAt: item.last_used_at
+          };
+        });
+        setSettings(settingsMap);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveExerciseSetting = async (exerciseId, weight, reps) => {
+    const { data, error } = await supabase
+      .from('user_exercise_settings')
+      .upsert({
+        user_id: user.id,
+        exercise_id: exerciseId,
+        last_weight: weight,
+        last_reps: reps,
+        last_used_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,exercise_id'
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      setSettings(s => ({
+        ...s,
+        [exerciseId]: {
+          weight: parseFloat(data.last_weight) || 0,
+          reps: parseInt(data.last_reps) || 10,
+          lastUsedAt: data.last_used_at
+        }
+      }));
+    }
+
+    return { data, error };
+  };
+
+  const getExerciseSetting = (exerciseId) => {
+    return settings[exerciseId] || null;
+  };
+
+  return { settings, loading, saveExerciseSetting, getExerciseSetting };
+}
