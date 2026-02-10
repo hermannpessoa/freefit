@@ -1,10 +1,12 @@
-:8080 {
+{$PORT:8080} {
     root * /app/dist
 
     encode gzip
 
     # Serve static files with correct MIME types
-    file_server
+    file_server {
+        precompressed gzip
+    }
 
     # Handle SPA routing - fallback to index.html for all routes
     try_files {path} /index.html
@@ -17,4 +19,20 @@
         X-Frame-Options "SAMEORIGIN"
         Referrer-Policy "strict-origin-when-cross-origin"
     }
+
+    # Explicitly set MIME types for common files
+    @js {
+        path *.js *.mjs
+    }
+    header @js Content-Type "application/javascript; charset=utf-8"
+
+    @css {
+        path *.css
+    }
+    header @css Content-Type "text/css; charset=utf-8"
+
+    @html {
+        path *.html
+    }
+    header @html Content-Type "text/html; charset=utf-8"
 }
