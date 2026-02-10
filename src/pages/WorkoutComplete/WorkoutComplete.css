@@ -1,0 +1,192 @@
+.workout-complete-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.complete-background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.5;
+}
+
+.glow-1 {
+    width: 500px;
+    height: 500px;
+    background: var(--primary-600);
+    top: -150px;
+    left: -150px;
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.glow-2 {
+    width: 400px;
+    height: 400px;
+    background: var(--accent-600);
+    bottom: -100px;
+    right: -100px;
+    animation: pulse-glow 3s ease-in-out infinite 1.5s;
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.6;
+    }
+}
+
+.complete-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+/* Trophy */
+.trophy-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trophy-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.4) 0%, transparent 70%);
+    animation: trophy-pulse 2s ease-in-out infinite;
+}
+
+@keyframes trophy-pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+.trophy-icon {
+    color: var(--accent-400);
+    filter: drop-shadow(0 0 20px rgba(249, 115, 22, 0.5));
+}
+
+/* Title */
+.complete-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin: 0 0 8px;
+    background: linear-gradient(135deg, var(--primary-400), var(--accent-400));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.complete-subtitle {
+    color: var(--text-secondary);
+    margin: 0 0 32px;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-card .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.stat-card .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+/* XP Earned */
+.xp-earned {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.1));
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: var(--radius-xl);
+    margin-bottom: 32px;
+}
+
+.xp-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--success-400);
+}
+
+.xp-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Actions */
+.complete-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Celebration effect */
+body.celebrating::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, rgba(249, 115, 22, 0.1) 0%, transparent 50%);
+    animation: celebrate-flash 0.5s ease-out;
+}
+
+@keyframes celebrate-flash {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}

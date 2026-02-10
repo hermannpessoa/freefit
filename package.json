@@ -1,0 +1,51 @@
+{
+  "name": "myfit-ai-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "db:init": "node scripts/init-db.js",
+    "db:setup": "node scripts/setup-database.js",
+    "db:fix-onboarding": "node scripts/fix-onboarding-db.js",
+    "db:add-machines": "node scripts/add-machine-exercises.js",
+    "db:add-nakagym": "node scripts/add-nakagym-exercises.js",
+    "db:add-images": "node scripts/add-exercise-images.js",
+    "db:add-ai-metadata": "node scripts/add-ai-metadata-column.js",
+    "db:add-is-template": "node scripts/add-is-template-column.js",
+    "db:fix-workouts-rls": "node scripts/fix-workouts-rls.js",
+    "db:add-day-of-week": "node scripts/add-day-of-week-column.js",
+    "db:check": "node scripts/check-database.js",
+    "db:add-templates": "node scripts/add-workout-templates.js",
+    "db:list-duplicates": "node scripts/list-duplicate-exercises.js",
+    "db:remove-duplicates": "node scripts/remove-duplicate-exercises.js",
+    "check-user": "node scripts/check-user.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
+    "framer-motion": "^12.31.0",
+    "lucide-react": "^0.563.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.13.0",
+    "recharts": "^3.7.0",
+    "swiper": "^12.1.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "dotenv": "^17.2.4",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "pg": "^8.18.0",
+    "vite": "^5.4.21"
+  }
+}

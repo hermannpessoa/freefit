@@ -1,0 +1,350 @@
+.onboarding-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+}
+
+.onboarding-header {
+    padding: 16px 20px;
+    padding-top: calc(16px + env(safe-area-inset-top));
+}
+
+.progress-bar-container {
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+}
+
+.step-indicator {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+}
+
+.onboarding-content {
+    flex: 1;
+    padding: 0 20px;
+    overflow-y: auto;
+}
+
+.step-content {
+    padding-bottom: 100px;
+}
+
+.step-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.step-icon {
+    color: var(--primary-400);
+    margin-bottom: 16px;
+}
+
+.step-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Options Grid */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.options-grid.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.option-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 16px;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: center;
+}
+
+.option-card:hover {
+    background: var(--bg-elevated);
+}
+
+.option-card.selected {
+    border-color: var(--primary-500);
+    background: rgba(124, 58, 237, 0.1);
+}
+
+.option-icon {
+    font-size: 2rem;
+}
+
+.option-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.option-desc {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.check-icon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: var(--primary-400);
+}
+
+/* Options List */
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: left;
+}
+
+.option-row:hover {
+    background: var(--bg-elevated);
+}
+
+.option-row.selected {
+    border-color: var(--primary-500);
+    background: rgba(124, 58, 237, 0.1);
+}
+
+.option-row .option-icon {
+    font-size: 1.5rem;
+    width: 48px;
+    text-align: center;
+}
+
+.option-number {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-400);
+}
+
+.option-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.option-row .check-icon {
+    position: static;
+}
+
+/* Injuries Section */
+.injuries-section {
+    text-align: center;
+}
+
+.injuries-hint {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.option-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.option-chip:hover {
+    background: var(--bg-elevated);
+}
+
+.option-chip.selected {
+    border-color: var(--primary-500);
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--primary-300);
+}
+
+/* Body Form */
+.body-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.gender-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.gender-btn {
+    padding: 20px;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all var(--transition-base);
+}
+
+.gender-btn:hover {
+    background: var(--bg-elevated);
+}
+
+.gender-btn.selected {
+    border-color: var(--primary-500);
+    background: rgba(124, 58, 237, 0.15);
+}
+
+.body-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.body-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.body-input-group label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.body-input-group input {
+    width: 100%;
+    padding: 16px;
+    padding-right: 40px;
+    background: var(--bg-tertiary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.body-input-group input:focus {
+    border-color: var(--primary-500);
+    outline: none;
+}
+
+.body-input-group .unit {
+    position: absolute;
+    right: 12px;
+    bottom: 18px;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+/* Name Section */
+.name-section {
+    text-align: center;
+}
+
+.name-input {
+    width: 100%;
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-xl);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.name-input:focus {
+    border-color: var(--primary-500);
+    outline: none;
+}
+
+.name-hint {
+    margin-top: 12px;
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+}
+
+/* Footer */
+.onboarding-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background: rgba(13, 15, 20, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.onboarding-footer .btn {
+    flex: 1;
+}
+
+@media (min-width: 640px) {
+    .options-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .options-grid.cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .onboarding-content {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+}
