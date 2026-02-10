@@ -829,14 +829,29 @@
     border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+@media (max-width: 480px) {
+    .exercise-card {
+        padding: 12px;
+    }
+}
+
 .exercise-info {
     flex: 1;
+    min-width: 0;
 }
 
 .exercise-name {
     font-size: 1rem;
     margin: 0 0 4px;
     color: var(--text-primary);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 480px) {
+    .exercise-name {
+        font-size: 0.95rem;
+    }
 }
 
 .exercise-category {
@@ -852,9 +867,19 @@
     font-size: 0.8rem;
     color: var(--text-tertiary);
     margin: 8px 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 480px) {
+    .exercise-equipment {
+        font-size: 0.75rem;
+        gap: 4px;
+    }
 }
 
 .exercise-equipment svg {
+    flex-shrink: 0;
     color: var(--primary-400);
 }
 
@@ -868,11 +893,19 @@
     border-radius: var(--radius-md);
 }
 
+@media (max-width: 480px) {
+    .exercise-specs {
+        gap: 8px;
+        padding: 10px 8px;
+    }
+}
+
 .spec-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
+    min-width: 0;
 }
 
 .spec-label {
@@ -883,10 +916,24 @@
     letter-spacing: 0.5px;
 }
 
+@media (max-width: 480px) {
+    .spec-label {
+        font-size: 0.65rem;
+        letter-spacing: 0.3px;
+    }
+}
+
 .spec-value {
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
+    word-break: break-word;
+}
+
+@media (max-width: 480px) {
+    .spec-value {
+        font-size: 0.9rem;
+    }
 }
 
 .exercise-description {
@@ -897,6 +944,13 @@
     background: rgba(99, 102, 241, 0.05);
     border-radius: var(--radius-md);
     border-left: 3px solid var(--primary-500);
+}
+
+@media (max-width: 480px) {
+    .exercise-description {
+        padding: 10px;
+        gap: 6px;
+    }
 }
 
 .exercise-description svg {
@@ -910,4 +964,14 @@
     font-size: 0.85rem;
     color: var(--text-secondary);
     line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+@media (max-width: 480px) {
+    .exercise-description p {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
 }
