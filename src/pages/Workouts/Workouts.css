@@ -831,7 +831,8 @@
 
 @media (max-width: 480px) {
     .exercise-card {
-        padding: 12px;
+        padding: 14px;
+        margin-bottom: 10px;
     }
 }
 
@@ -873,8 +874,9 @@
 
 @media (max-width: 480px) {
     .exercise-equipment {
-        font-size: 0.75rem;
-        gap: 4px;
+        font-size: 0.78rem;
+        gap: 5px;
+        margin: 6px 0;
     }
 }
 
@@ -895,8 +897,10 @@
 
 @media (max-width: 480px) {
     .exercise-specs {
-        gap: 8px;
-        padding: 10px 8px;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 16px;
+        margin: 14px 0;
     }
 }
 
@@ -906,20 +910,33 @@
     align-items: center;
     text-align: center;
     min-width: 0;
+    gap: 4px;
+}
+
+@media (max-width: 480px) {
+    .spec-item {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: var(--radius-sm);
+    }
 }
 
 .spec-label {
     font-size: 0.7rem;
     color: var(--text-tertiary);
-    margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 @media (max-width: 480px) {
     .spec-label {
-        font-size: 0.65rem;
-        letter-spacing: 0.3px;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        text-align: left;
+        text-transform: none;
     }
 }
 
@@ -932,7 +949,7 @@
 
 @media (max-width: 480px) {
     .spec-value {
-        font-size: 0.9rem;
+        font-size: 1.05rem;
     }
 }
 
@@ -948,8 +965,8 @@
 
 @media (max-width: 480px) {
     .exercise-description {
-        padding: 10px;
-        gap: 6px;
+        padding: 14px;
+        gap: 10px;
     }
 }
 
@@ -971,7 +988,7 @@
 
 @media (max-width: 480px) {
     .exercise-description p {
-        font-size: 0.8rem;
-        line-height: 1.4;
+        font-size: 0.85rem;
+        line-height: 1.5;
     }
 }
