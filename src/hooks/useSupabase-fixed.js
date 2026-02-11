@@ -295,6 +295,12 @@ export function useWorkouts(user) {
       .insert([{ ...workout, user_id: user.id }])
       .select()
       .single();
+    
+    // Optimistically update local state
+    if (!error && data) {
+      setWorkouts(w => [...w, data]);
+    }
+    
     return { data, error };
   };
 
@@ -303,6 +309,12 @@ export function useWorkouts(user) {
       .from('workouts')
       .delete()
       .eq('id', id);
+    
+    // Optimistically update local state
+    if (!error) {
+      setWorkouts(w => w.filter(wo => wo.id !== id));
+    }
+    
     return { error };
   };
 
