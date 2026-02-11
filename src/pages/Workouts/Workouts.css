@@ -352,6 +352,16 @@
     font-size: 0.75rem;
     font-weight: 700;
     color: white;
+    flex-shrink: 0;
+}
+
+.exercise-thumb {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-tertiary);
 }
 
 .exercise-header h4 {
@@ -375,6 +385,115 @@
 
 .remove-btn:hover {
     background: rgba(239, 68, 68, 0.2);
+}
+
+/* Swap Exercise Button */
+.swap-exercise-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    border-radius: var(--radius-sm);
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    align-self: flex-start;
+}
+
+.swap-exercise-btn:hover {
+    color: var(--primary-400);
+    border-color: var(--primary-400);
+    background: rgba(var(--primary-rgb, 99,102,241), 0.08);
+}
+
+.swap-exercise-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.swap-exercise-btn .spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Swap Suggestion Modal */
+.swap-suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.swap-comparison {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+}
+
+.swap-from, .swap-to {
+    flex: 1;
+    text-align: center;
+}
+
+.swap-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+}
+
+.swap-exercise-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.swap-arrow {
+    font-size: 1.2rem;
+    color: var(--primary-400);
+    flex-shrink: 0;
+}
+
+.swap-preview-img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    background: var(--bg-tertiary);
+}
+
+.swap-reason {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 10px 12px;
+    background: rgba(var(--primary-rgb, 99,102,241), 0.06);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--primary-400);
+}
+
+.swap-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.swap-error {
+    text-align: center;
+    padding: 16px;
+    color: var(--text-secondary);
 }
 
 .exercise-params {

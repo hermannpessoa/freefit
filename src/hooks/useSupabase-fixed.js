@@ -41,7 +41,7 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
     if (error) throw error;
   };
 
@@ -313,6 +313,12 @@ export function useWorkouts(user) {
       .eq('id', id)
       .select()
       .single();
+    
+    // Optimistically update local state so UI reflects changes immediately
+    if (!error && data) {
+      setWorkouts(w => w.map(wo => wo.id === id ? data : wo));
+    }
+    
     return { data, error };
   };
 
