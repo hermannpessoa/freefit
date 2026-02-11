@@ -58,8 +58,12 @@ export function useAuth() {
     if (!session) throw new Error('No active session');
 
     // Call the Edge Function which uses service_role to delete the user
+    // Explicitly pass the Authorization header to ensure JWT is included
     const { data, error } = await supabase.functions.invoke('delete-user', {
       method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
     });
 
     if (error) throw error;
