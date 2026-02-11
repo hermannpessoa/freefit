@@ -22,7 +22,7 @@ app.use(express.static(join(__dirname, 'dist'), {
 }));
 
 // SPA fallback - serve index.html for all other routes
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
