@@ -117,6 +117,18 @@ export function AppProvider({ children }) {
             isLoadingProfile.current = true;
 
             try {
+                // Detect if we're in an OAuth callback (hash has tokens)
+                const hash = window.location.hash;
+                const isOAuthCallback = hash && (hash.includes('access_token') || hash.includes('refresh_token'));
+
+                if (isOAuthCallback) {
+                    console.log('🔑 AppContext: OAuth callback detected, waiting for AuthCallbackPage to handle session...');
+                    // Don't call getSession() here — AuthCallbackPage will call setSession()
+                    // which triggers onAuthStateChange, and our listener below will handle it.
+                    isLoadingProfile.current = false;
+                    return;
+                }
+
                 console.log('🔄 AppContext: Carregando estado do usuário...');
                 const { data: { session } } = await supabase.auth.getSession();
 
@@ -212,10 +224,16 @@ export function AppProvider({ children }) {
         loadUserState();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            console.log('🔔 Auth state changed, event:', _event, 'user:', session?.user?.id);
+
             if (session?.user) {
                 // Evita recarregar profile do mesmo usuário
                 if (lastLoadedUserId.current === session.user.id) {
                     console.log('⚠️ Profile do usuário', session.user.id, 'já foi carregado, pulando');
+                    // Still make sure we're not stuck in loading
+                    if (state.isLoading) {
+                        dispatch({ type: ActionTypes.SET_LOADING, payload: false });
+                    }
                     return;
                 }
 

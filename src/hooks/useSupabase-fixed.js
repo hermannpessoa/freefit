@@ -53,15 +53,20 @@ export function useAuth() {
   const deleteAccount = async () => {
     if (!user) throw new Error('No user logged in');
     
-    // Delete user data from database tables
-    await supabase.from('progress_records').delete().eq('user_id', user.id);
-    await supabase.from('workout_history').delete().eq('user_id', user.id);
-    await supabase.from('workouts').delete().eq('user_id', user.id);
-    await supabase.from('profiles').delete().eq('id', user.id);
-    
-    // Delete auth user
-    const { error } = await supabase.auth.admin.deleteUser(user.id);
+    // Get the current session token
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('No active session');
+
+    // Call the Edge Function which uses service_role to delete the user
+    const { data, error } = await supabase.functions.invoke('delete-user', {
+      method: 'POST',
+    });
+
     if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+
+    // Sign out locally after successful deletion
+    await supabase.auth.signOut();
   };
 
   return { user, loading, login, signup, logout, socialLogin, deleteAccount };
