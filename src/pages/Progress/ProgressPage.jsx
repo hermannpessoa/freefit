@@ -3,31 +3,96 @@ import { motion } from 'framer-motion';
 import { TrendingUp, Flame, Dumbbell, Trophy, Calendar, Target, ChevronRight, Award } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useApp } from '../../contexts/AppContext';
+import { useSupabaseContext } from '../../contexts/SupabaseContext';
 import { badges } from '../../data/workouts';
 import { Card, Badge, ProgressBar } from '../../components/ui';
 import './Progress.css';
 
 export default function ProgressPage() {
     const { state } = useApp();
-    const { profile, workoutHistory, progressRecords } = state;
+    const { profile, progressRecords } = state;
+    const { history } = useSupabaseContext();
+    
+    // Map Supabase data to match expected format
+    const workoutHistory = useMemo(() => {
+        return history.history.map(w => {
+            // Calculate volume from exercises if not stored directly
+            const calculatedVolume = w.total_volume || 
+                (w.exercises_completed || []).reduce((sum, set) => 
+                    sum + (set.reps || 0) * (set.weight || 0), 0
+                );
+            
+            return {
+                id: w.id,
+                workoutId: w.workout_id,
+                workoutName: w.workout_name,
+                completedAt: w.completed_at,
+                duration: w.duration_minutes,
+                xpEarned: w.xp_earned,
+                totalVolume: calculatedVolume,
+                exercisesCompleted: w.exercises_completed || []
+            };
+        });
+    }, [history.history]);
 
-    // Generate mock weekly data for charts
+    // Generate weekly data from actual workout history (last 7 days)
     const weeklyData = useMemo(() => {
-        const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-        return days.map((day, i) => ({
-            day,
-            workouts: Math.floor(Math.random() * 2),
-            volume: Math.floor(Math.random() * 5000) + 2000,
-        }));
-    }, []);
+        const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        const today = new Date();
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 6);
 
-    // Monthly progress data
+        // Initialize data for last 7 days
+        const weekData = Array.from({ length: 7 }).map((_, i) => {
+            const date = new Date(sevenDaysAgo);
+            date.setDate(sevenDaysAgo.getDate() + i);
+            return {
+                day: days[date.getDay()],
+                workouts: 0,
+                volume: 0,
+                date: date.toDateString()
+            };
+        });
+
+        // Count workouts and volume per day
+        workoutHistory.forEach(workout => {
+            const workoutDate = new Date(workout.completedAt);
+            const dayData = weekData.find(d => d.date === workoutDate.toDateString());
+            if (dayData) {
+                dayData.workouts += 1;
+                dayData.volume += workout.totalVolume || 0;
+            }
+        });
+
+        return weekData;
+    }, [workoutHistory]);
+
+    // Monthly progress data - based on actual workout history
     const monthlyData = useMemo(() => {
-        return Array.from({ length: 30 }).map((_, i) => ({
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        // Create array for each day of the month
+        const dailyVolume = Array.from({ length: daysInMonth }).map((_, i) => ({
             day: i + 1,
-            volume: Math.floor(Math.random() * 3000) + 4000 + (i * 50),
+            volume: 0
         }));
-    }, []);
+
+        // Aggregate volume per day from workout history
+        workoutHistory.forEach(workout => {
+            const workoutDate = new Date(workout.completedAt);
+            if (workoutDate.getMonth() === currentMonth && workoutDate.getFullYear() === currentYear) {
+                const day = workoutDate.getDate();
+                if (day >= 1 && day <= daysInMonth) {
+                    dailyVolume[day - 1].volume += workout.totalVolume || 0;
+                }
+            }
+        });
+
+        return dailyVolume;
+    }, [workoutHistory]);
 
     // Stats calculations
     const stats = useMemo(() => {

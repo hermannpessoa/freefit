@@ -36,6 +36,7 @@ export default function WorkoutCompletePage() {
                 workout_id: lastWorkout.id,
                 workout_name: lastWorkout.name,
                 duration_minutes: lastWorkout.duration || 0,
+                total_volume: lastWorkout.totalVolume || 0,
                 xp_earned: lastWorkout.xpEarned || 50,
                 exercises_completed: lastWorkout.exercisesCompleted || []
             });
