@@ -105,12 +105,8 @@ export function AppProvider({ children }) {
     const lastLoadedUserId = useRef(null);
 
     useEffect(() => {
-        // Prevent duplicate calls in React Strict Mode
-        if (hasLoadedInitially.current) {
-            console.log('⚠️ Evitando chamada duplicada (já carregou)');
-            return;
-        }
-        hasLoadedInitially.current = true;
+        // Always run: set up auth listener and load user state.
+        // The isLoadingProfile ref prevents concurrent profile fetches.
 
         // Sync with Supabase Auth first, then load from localStorage if needed
         const loadUserState = async () => {

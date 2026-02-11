@@ -7,6 +7,7 @@ import { LoadingScreen } from './components/ui';
 // Pages
 import LoginPage from './pages/Auth/LoginPage';
 import SignupPage from './pages/Auth/SignupPage';
+import AuthCallbackPage from './pages/Auth/AuthCallbackPage';
 import OnboardingPage from './pages/Onboarding/OnboardingPage';
 import DashboardPage from './pages/Dashboard/DashboardPage';
 import ExercisesPage from './pages/Exercises/ExercisesPage';
@@ -69,6 +70,18 @@ function PublicRoute({ children }) {
   }
 
   return children;
+}
+
+// Handles root URL - detects OAuth hash fragments before redirecting
+function RootRedirect() {
+  const hash = window.location.hash;
+  const hasAuthTokens = hash && (hash.includes('access_token') || hash.includes('refresh_token'));
+
+  if (hasAuthTokens) {
+    return <AuthCallbackPage />;
+  }
+
+  return <Navigate to="/dashboard" replace />;
 }
 
 // App Layout with Bottom Nav
@@ -183,8 +196,11 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* OAuth callback route */}
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+      {/* Default redirect - detect OAuth hash fragments */}
+      <Route path="/" element={<RootRedirect />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

@@ -101,7 +101,7 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const { data, error } = await auth.socialLogin(provider.toLowerCase(), {
-                redirectTo: `${window.location.origin}/onboarding`
+                redirectTo: `${window.location.origin}/auth/callback`
             });
             if (error) {
                 throw error;
